@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "70033:70033"
+      - "7033:7033"
     volumes:
       - "./:/workspace"
     platform: linux/amd64
