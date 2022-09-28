@@ -7,7 +7,7 @@ RUN apt-get install -y nodejs expect &&  npm i -g pm2
 RUN npm i -g yarn
 WORKDIR /workspace
 COPY . .
-EXPOSE 7033
+EXPOSE 3000
 RUN rm -rf node_modules yarn.lock package.lock
 RUN npm i
 RUN chmod 700 /workspace/start.sh
