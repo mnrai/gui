@@ -1,0 +1,76 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    color: white;
+    background: black;
+  }
+}
+
+*{
+    margin: 0;
+    padding:0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f7faff;
+}
+
+p {
+    font-family: Roboto, sans-serif, serif;
+    color: #404040;
+    font-size: 12px;
+    padding-bottom: 10px;
+    letter-spacing: .8px;
+
+}
+
+h3 { 
+    font-family: Source Sans Pro, Roboto, sans-serif, serif;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    font-size: 18px;
+    color: #375686;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-transform: uppercase;
+}
+h4 { 
+    font-family: Roboto, sans-serif, serif;
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-size: 14px;
+    color: #444;
+
+    padding-top: 10px;
+}
+
+a, a:hover, a:visited {
+            color: #6f8ab5;
+            font-weight: bold;
+            text-decoration: none;
+
+}
+
+.danger {
+  color: #F00;
+}
