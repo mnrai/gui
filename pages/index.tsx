@@ -41,20 +41,32 @@ checkToken()
   }
   return (
     <Layout withNav={false}>
-      <TextInputField
-      label="Username"
-      name="username"
-        value={username}
-        onChange={(e: any) => setUsername(e.target.value)}
-      ></TextInputField>
-      <TextInputField
-      label="Password"
-      name="password"
-        value={password}
-        type="password"
-        onChange={(e: any) => setPassword(e.target.value)}
-      ></TextInputField>
-      <Button onClick={_login} >Login</Button>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <div style={{ maxWidth: 500, maxHeight: 200, marginTop:100, display: "flex" , flexDirection: "column", alignItems:"center"}}>
+          <TextInputField
+            label="Username"
+            name="username"
+            value={username}
+            onChange={(e: any) => setUsername(e.target.value)}
+          ></TextInputField>
+          <TextInputField
+            label="Password"
+            name="password"
+            value={password}
+            type="password"
+            onChange={(e: any) => setPassword(e.target.value)}
+          ></TextInputField>
+          <Button onClick={_login}>Login</Button>
+        </div>
+      </div>
     </Layout>
   );
 };

@@ -22,9 +22,9 @@ const regenColdkey = async ({
         name +
         ';" >> r__c;echo "expect \\"yption: \\";" >> r__c;echo "send \\"' +
         password +
-        '\r\\";" >> r__c;echo "expect \\"assword: \\";" >> r__c;echo "send \\"' +
+        '\\r\\";" >> r__c;echo "expect \\"assword: \\";" >> r__c;echo "send \\"' +
         password +
-        '\r\\";" >> r__c;echo "interact;" >> r__c;./r__c | grep regen_coldkey',
+        '\\r\\";" >> r__c;echo "interact;" >> r__c;./r__c | grep regen_coldkey',
       { shell: "/bin/bash", encoding: "utf8" },
       (err, stout, stderr) => {
 
