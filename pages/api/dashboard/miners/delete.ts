@@ -2,11 +2,11 @@
 import { exec } from "child_process";
 import { Coldkey, Hotkey, Miner } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { deleteMiner } from "helpers";
+import { authHandler, deleteMiner } from "helpers";
 
 type Data = any
 
-export default async function handler(
+export default authHandler(async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
@@ -18,7 +18,7 @@ export default async function handler(
      if (
        !name
      ) {
-       return res.status(401).json({ error: "not authorised" });
+     return res.status(401).json({ error: "oops there was an issue" });
      }
      const miner = await Miner.findOne({ where: { name }, include: Hotkey });
 
@@ -41,3 +41,4 @@ export default async function handler(
      return res.status(401).json({ error: "oops there was an issue" });
    }
 }
+)

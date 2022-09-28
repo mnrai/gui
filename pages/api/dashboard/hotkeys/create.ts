@@ -39,7 +39,7 @@ export default async function handler(
    try {
      const { name,coldkeyId } = JSON.parse(req.body);
      if (!name || !coldkeyId) {
-       return res.status(401).json({ error: "not authorised" });
+     return res.status(401).json({ error: "oops, there was a problem" });
      }
 
      const coldkey = await Coldkey.findOne({ where: { id: coldkeyId } });
@@ -64,6 +64,6 @@ export default async function handler(
      });
    } catch (e) {
 
-     return res.status(401).json({ error: "not authorised" });
+     return res.status(401).json({ error: "oops, there was a problem" });
    }
 }

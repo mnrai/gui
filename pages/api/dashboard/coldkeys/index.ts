@@ -17,6 +17,6 @@ export default authHandler(async function handler(
       coldkeys,
     });
   } catch (e) {
-    return res.status(401).json({ error: "not authorised" });
+     return res.status(401).json({ error: "oops, there was a problem" });
   }
 });

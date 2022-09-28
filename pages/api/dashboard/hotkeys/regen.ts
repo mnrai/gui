@@ -2,6 +2,7 @@
 import { exec } from "child_process";
 import { Coldkey, Hotkey } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { authHandler } from "helpers";
 
 type Data = any
 
@@ -33,7 +34,7 @@ const regenHotkey = async ({
   });
 };
 
-export default async function handler(
+export default authHandler(async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
@@ -41,7 +42,7 @@ export default async function handler(
    try {
      const { name, coldkeyId, mnemonic } = JSON.parse(req.body);
      if (!name || !coldkeyId || !mnemonic) {
-       return res.status(401).json({ error: "not authorised" });
+    return res.status(401).json({ error: "oops, there was a problem" });
      }
      const coldkey = await Coldkey.findOne({ where: { id: coldkeyId } });
 
@@ -69,6 +70,6 @@ export default async function handler(
        hotkey,
      });
    } catch (e) {
-     return res.status(401).json({ error: "not authorised" });
+    return res.status(401).json({ error: "oops, there was a problem" });
    }
-}
+})

@@ -36,7 +36,7 @@ export default authHandler(async function handler(
    try {
      const { name, password } = JSON.parse(req.body);
      if (!name || !password) {
-       return res.status(401).json({ error: "not authorised" });
+       return res.status(401).json({ error: "oops, there was a problem" });
      }
 
      const mnemonic = await newColdkey({name, password})
@@ -49,6 +49,6 @@ export default authHandler(async function handler(
        mnemonic,
      });
    } catch (e) {
-     return res.status(401).json({ error: "not authorised" });
+     return res.status(401).json({ error: "oops, there was a problem" });
    }
 })

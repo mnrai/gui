@@ -2,12 +2,12 @@
 import { exec } from "child_process";
 import { Coldkey, Hotkey, Miner } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { startMiner } from "helpers";
+import { authHandler, startMiner } from "helpers";
 
 type Data = any
 
 
-export default async function handler(
+export default authHandler(async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
@@ -35,7 +35,7 @@ export default async function handler(
        !useCuda ||
        !subtensorNetwork
      ) {
-       return res.status(401).json({ error: "not authorised" });
+     return res.status(401).json({ error: "oops there was an issue" });
      }
 
      const hotkey = await Hotkey.findOne({ where: { id: hotkeyId } });
@@ -85,3 +85,4 @@ export default async function handler(
      return res.status(401).json({ error: "oops there was an issue" });
    }
 }
+)
