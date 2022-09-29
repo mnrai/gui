@@ -63,7 +63,7 @@ export default async function handler(
           expiresIn: 60*60,
         }
       );
-      res.setHeader("Set-Cookie", `Authorization=${token}; HttpOnly; Path=/`);
+      res.setHeader("Set-Cookie", `Authorization=${token}; HttpOnly;  Secure, Path=/`);
       res.status(200).json({ user, comparePW, randomStringHash, token });
     } catch(e) {
           return res.status(401).json({ error: "not authorised" });

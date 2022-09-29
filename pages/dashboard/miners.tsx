@@ -391,6 +391,7 @@ const MinersPage: NextPage = () => {
                   // @ts-ignore
                   .filter(
                     (h) =>
+                      // @ts-ignore
                       h?.ColdkeyId == parseInt(formik.values.coldkeyId + "")
                   )
                   .map((h) => {
