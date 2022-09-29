@@ -5,7 +5,9 @@ import { ApiContext, ColdkeyContext, HotkeyContext, MinerContext } from "../cont
 import { Coldkey, Hotkey, Miner } from '../models'
 import { Api } from '../api';
 import { useRouter } from 'next/router';
-
+import * as yup from 'yup'
+import YupPassword from 'yup-password'
+YupPassword(yup) 
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter()

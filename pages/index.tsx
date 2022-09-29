@@ -2,15 +2,35 @@ import * as React from "react";
 
 import {
 
+  FormikTextInput,
   Layout,
 } from "../components";
 import { TextInputField, SideSheet, Button } from "evergreen-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useApi } from "hooks";
+import { useFormik } from "formik";
+import { object, string, number, date, InferType } from "yup";
 
 
 const Login: NextPage = () => {
+  const formik = useFormik({
+    initialValues: {
+      username: "",
+      password: "",
+    },
+    validationSchema: object({
+      username: string().min(5).required(),
+      password: string().password().required(),
+    }),
+    onSubmit: async ({ username, password }) => {
+
+      const res = await Api.User.login({ username, password });
+      if (!res.error) {
+        onSuccess();
+      }
+    },
+  });
   const Api = useApi();
   const router = useRouter()
   const [didInit, setDidInit] = React.useState(false);
@@ -33,12 +53,7 @@ const Login: NextPage = () => {
 checkToken()
   },[])
 
-  const _login = async () => {
-    const res = await Api.User.login({username,password});
-    if(!res.error) {
-      onSuccess()
-    }
-  }
+  
   return (
     <Layout withNav={false}>
       <div
@@ -51,20 +66,24 @@ checkToken()
         }}
       >
         <div style={{ maxWidth: 500, maxHeight: 200, marginTop:100, display: "flex" , flexDirection: "column", alignItems:"center"}}>
-          <TextInputField
+          <FormikTextInput
+          style={{width:400}}
+            formik={formik}
             label="Username"
             name="username"
             value={username}
             onChange={(e: any) => setUsername(e.target.value)}
-          ></TextInputField>
-          <TextInputField
+          ></FormikTextInput>
+          <FormikTextInput
+          style={{width:400}}
+            formik={formik}
             label="Password"
             name="password"
             value={password}
             type="password"
             onChange={(e: any) => setPassword(e.target.value)}
-          ></TextInputField>
-          <Button onClick={_login}>Login</Button>
+          ></FormikTextInput>
+          <Button onClick={formik.submitForm}>Login</Button>
         </div>
       </div>
     </Layout>

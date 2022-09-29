@@ -20,7 +20,10 @@
     "react-code-blocks": "^0.0.9-0",
     "react-dom": "18.2.0",
     "sequelize": "^6.23.2",
-    "sqlite3": "^5.1.1"
+    "shell-escape": "^0.2.0",
+    "sqlite3": "^5.1.1",
+    "yup": "^0.32.11",
+    "yup-password": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "18.7.23",

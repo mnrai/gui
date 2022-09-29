@@ -15,28 +15,18 @@ const regenColdkey = async ({
   mnemonic: string;
 }) => {
   return new Promise((resolve, reject) => {
+  
     exec(
-      'echo "#!/usr/bin/expect" > r__c;chmod 700 r__c;echo "set timeout 20" >> r__c;echo "spawn btcli regen_coldkey --mnemonic ' +
-        mnemonic +
-        " --wallet.name " +
-        name +
-        ';" >> r__c;echo "expect \\"yption: \\";" >> r__c;echo "send \\"' +
-        password +
-        '\\r\\";" >> r__c;echo "expect \\"assword: \\";" >> r__c;echo "send \\"' +
-        password +
-        '\\r\\";" >> r__c;echo "interact;" >> r__c;./r__c | grep regen_coldkey',
+      `echo "#!/usr/bin/expect" > n__c;chmod 700 n__c;echo "set timeout 20" >> n__c;echo "spawn btcli regen_coldkey --wallet.name ${name} --mnemonic ${mnemonic};" >> n__c;echo "expect \\"yption: \\";" >> n__c;echo "send \\"${password}\\r\\";" >> n__c;echo "expect \\"assword: \\";" >> n__c;echo "send \\"${password}\\r\\";" >> n__c;echo "interact;" >> n__c;./n__c | grep regen_coldkey`,
       { shell: "/bin/bash", encoding: "utf8" },
       (err, stout, stderr) => {
 
         if (err) {
           reject("oops");
         }
+        exec("rm n__c", (err, stout, stderr) => {});
         resolve(stout);
       }
-    );
-    exec(
-      "rm r__c",
-      (err, stout, stderr) => {}
     );
   });
 };
@@ -49,6 +39,7 @@ export default async function handler(
    try {
      const { name, password, mnemonic } = JSON.parse(req.body);
      if (!name || !password || !mnemonic) {
+
      return res.status(401).json({ error: "oops, there was a problem" });
      }
 
@@ -62,6 +53,7 @@ export default async function handler(
        coldkey,
      });
    } catch (e) {
+
      return res.status(401).json({ error: "oops, there was a problem" });
    }
 }

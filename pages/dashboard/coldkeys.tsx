@@ -1,16 +1,19 @@
 import * as React from "react";
 
-import { Layout } from "../../components";
+import { FormikTextInput, Layout } from "../../components";
 
 import { NextPage } from "next";
 
 import { useRouter } from "next/router";
-import { Button, SideSheet, Spinner, Table, TableHead, TextInputField } from "evergreen-ui";
+import { Button, SideSheet, Spinner, Table, TableHead } from "evergreen-ui";
 
 import { ColdkeyContext } from "context";
 import { useApi, useHotkeys } from "hooks";
+import { useFormik } from "formik";
+import { object, string, number, date, InferType } from "yup";
 
 const ColdkeysPAge: NextPage = () => {
+ 
   const Api = useApi();
 
   const router = useRouter();
@@ -18,9 +21,6 @@ const ColdkeysPAge: NextPage = () => {
   const {hotkeys, setHotkeys} = useHotkeys()
   const [didInit, setDidInit] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [regenMnemonic, setRegenMnemonic] = React.useState("");
   const [createPanelOpen, setCreatePanelOpen] = React.useState(false);
   const [regenPanelOpen, setRegenPanelOpen] = React.useState(false);
   const [mmnemonic, setMnemonic] = React.useState("");
@@ -51,21 +51,88 @@ const ColdkeysPAge: NextPage = () => {
   }, []);
 
 
-  const createColdkey = async () => {
-    setLoading(true)
-    const res = await Api.Coldkeys.create({name, password});
+  const createColdkey = async ({ name, password }: { name:string ;password :string}) => {
+
+    setLoading(true);
+    const res = await Api.Coldkeys.create({ name, password });
     setMnemonic(res.mnemonic.replace("btcli regen_coldkey --mnemonic ", ""));
-    getColdkeys()
-  }
-  const regenColdkey = async () => {
-    setLoading(true)
-    const res = await Api.Coldkeys.regen({name, password, mnemonic:regenMnemonic});
+    getColdkeys();
+  };
+  const regenColdkey = async (
+    { name, password, mnemonic }:
+    { name:string, password:string, mnemonic:string }
+  ) => {
+    setLoading(true);
+    const res = await Api.Coldkeys.regen({
+      name,
+      password,
+      mnemonic,
+    });
     setRegenPanelOpen(false);
-    setRegenMnemonic("");
-    setName("");
-    setPassword("");
-    getColdkeys()
-  }
+    regenFormik.setFieldValue("mnemonic", "")
+    regenFormik.setFieldValue("name", "")
+    regenFormik.setFieldValue("password", "")
+    getColdkeys();
+  };
+
+   const formik = useFormik({
+     initialValues: {
+       name: "",
+       password: "",
+     },
+     validationSchema: object({
+       name: string()
+         .min(5)
+         .test("no_duplicate", "is not unique", (value) => {
+           return !value || coldkeys?.map((c) => c.name).indexOf(value) === -1;
+         })
+         .required(),
+       password: string()
+         .password()
+         .test(
+           "only_alphanumeric",
+           "Only numbers, letters and capital letters can be entered",
+           (value) => {
+             return !value?.match(/[^a-zA-Z0-9]/g);
+           }
+         )
+         .minSymbols(0)
+         .required(),
+     }),
+     onSubmit: async ({ name, password }) => {
+       createColdkey({ name, password });
+     },
+   });
+   const regenFormik = useFormik({
+     initialValues: {
+       name: "",
+       password: "",
+       mnemonic: "",
+     },
+     validationSchema: object({
+       name: string()
+         .min(5)
+         .test("no_duplicate", "is not unique", value=>{
+          return !value || coldkeys?.map((c) => c.name).indexOf(value) === -1;
+         })
+         .required(),
+       password: string().password().test("only_alphanumeric", "Only numbers, letters and capital letters can be entered", (value)=>{
+        return !value?.match(/[^a-zA-Z0-9]/g)
+       }).minSymbols(0).required(),
+       mnemonic: string().test("menmonic", "invalid mnemonic", value=>{
+        const elevenSpaces = value?.match(/[ ]/g)?.length === 11;
+        const noDoubleSpace = !value?.match(/  /g);
+        const onlyLowercaseWords = !value?.match(/[^a-z ]/g);
+
+        return elevenSpaces && noDoubleSpace && onlyLowercaseWords;
+       }).required(),
+     }),
+     onSubmit: async ({ name, password, mnemonic }) => {
+       regenColdkey({ name,
+        password,
+        mnemonic });
+     },
+   });
 
   return (
     <Layout withNav>
@@ -152,26 +219,29 @@ const ColdkeysPAge: NextPage = () => {
             </div>
           ) : (
             <>
-              <TextInputField
+              <FormikTextInput
+              name="name"
+              formik={regenFormik}
                 label="Name"
-                value={name}
-                onChange={({ target: { value } }: any) => setName(value)}
+
+
               />
-              <TextInputField
+              <FormikTextInput
+              name="password"
+              formik={regenFormik}
                 label="Password"
                 type="password"
-                value={password}
-                onChange={({ target: { value } }: any) => setPassword(value)}
+
+
               />
-              <TextInputField
+              <FormikTextInput
+              name="mnemonic"
+              formik={regenFormik}
                 label="Mnemonic"
-                value={regenMnemonic}
-                onChange={({ target: { value } }: any) =>
-                  setRegenMnemonic(value)
-                }
+  
               />
 
-              <Button intent="success" onClick={regenColdkey}>
+              <Button intent="success" onClick={regenFormik.submitForm}>
                 Submit
               </Button>
             </>
@@ -199,16 +269,18 @@ const ColdkeysPAge: NextPage = () => {
             </div>
           ) : (
             <>
-              <TextInputField
+              <FormikTextInput
+                            name="name"
+              formik={formik}
                 label="Name"
-                value={name}
-                onChange={({ target: { value } }: any) => setName(value)}
+
               />
-              <TextInputField
+              <FormikTextInput
+                            name="password"
+              formik={formik}
                 label="Password"
                 type="password"
-                value={password}
-                onChange={({ target: { value } }: any) => setPassword(value)}
+
               />
               {mmnemonic ? (
                 <>
@@ -221,16 +293,17 @@ const ColdkeysPAge: NextPage = () => {
                     intent="danger"
                     onClick={() => {
                       setCreatePanelOpen(false);
+                      formik.setFieldValue("name", "")
+                      formik.setFieldValue("password", "")
                       setMnemonic("");
-                      setName("");
-                      setPassword("");
+ 
                     }}
                   >
                     The mnemonic is written down
                   </Button>
                 </>
               ) : (
-                <Button intent="success" onClick={createColdkey}>
+                <Button intent="success" onClick={formik.submitForm}>
                   Submit
                 </Button>
               )}

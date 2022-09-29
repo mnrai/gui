@@ -29,13 +29,13 @@ export default authHandler(async function handler(
        !name ||
        !hotkeyId ||
        !model ||
-       !autocast ||
        !port ||
-       !cudaDevice ||
+       cudaDevice === undefined ||
        !useCuda ||
        !subtensorNetwork
      ) {
-     return res.status(401).json({ error: "oops there was an issue" });
+       
+       throw new Error("coldkey unknown");
      }
 
      const hotkey = await Hotkey.findOne({ where: { id: hotkeyId } });

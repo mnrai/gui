@@ -1,14 +1,16 @@
 import * as React from "react";
 
-import { Layout } from "../../components";
+import { FormikTextInput, Layout } from "../../components";
 
 import { NextPage } from "next";
 
 import { useRouter } from "next/router";
-import { Button, SelectField, SideSheet, Spinner, Table, TableHead, TextInputField } from "evergreen-ui";
+import { Button, SelectField, SideSheet, Spinner, Table, TableHead } from "evergreen-ui";
 
 import { ColdkeyContext } from "context";
 import { useApi, useColdkeys, useHotkeys } from "hooks";
+import { useFormik } from "formik";
+import { object, string, number, date, InferType } from "yup";
 
 const HotkeysPage: NextPage = () => {
   const Api = useApi();
@@ -18,12 +20,10 @@ const HotkeysPage: NextPage = () => {
   const {coldkeys,setColdkeys} = useColdkeys()
   const [didInit, setDidInit] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [coldkeyId, setColdkeyId] = React.useState<number|null>(null);
-  const [name, setName] = React.useState("");
-  const [regenMnemonic, setRegenMnemonic] = React.useState("");
   const [createPanelOpen, setCreatePanelOpen] = React.useState(false);
   const [regenPanelOpen, setRegenPanelOpen] = React.useState(false);
   const [mmnemonic, setMnemonic] = React.useState("");
+
 
   const getColdkeys = async () => {
     setLoading(true)
@@ -51,7 +51,13 @@ const HotkeysPage: NextPage = () => {
   }, []);
 
 
-  const createHotkey = async () => {
+  const createHotkey = async ({
+    coldkeyId,
+    name,
+  }: {
+    coldkeyId: number;
+    name:string }) => {
+
     if (coldkeyId) {
       setLoading(true);
       const res = await Api.Hotkeys.create({ name, coldkeyId });
@@ -62,21 +68,78 @@ const HotkeysPage: NextPage = () => {
       getHotkeys();
     }
   };
-  const regenHotkey = async () => {
+  const regenHotkey = async ({
+    name,
+    coldkeyId,
+    mnemonic,
+  }: {
+    name:string;
+    coldkeyId:number;
+    mnemonic:string;
+  }) => {
     if (coldkeyId) {
       setLoading(true);
       const res = await Api.Hotkeys.regen({
         name,
         coldkeyId,
-        mnemonic: regenMnemonic,
+        mnemonic,
       });
       setRegenPanelOpen(false);
-      setRegenMnemonic("");
-      setName("");
-      setColdkeyId(null);
+      regenFormik.setFieldValue("mnemonic", "");
+      regenFormik.setFieldValue("name", "");
+      regenFormik.setFieldValue("coldkeyId", null);
       getHotkeys();
     }
-  }
+  };
+
+   const formik = useFormik({
+     initialValues: {
+       name: "",
+       coldkeyId: null,
+     },
+     validationSchema: object({
+       name: string()
+         .min(5)
+         .test("no_duplicate_hotkey", "is not unique", (value) => {
+           return !value || hotkeys?.map((c) => c.name).indexOf(value) === -1;
+         })
+         .required(),
+       coldkeyId: number().required(),
+     }),
+     onSubmit: async ({ name, coldkeyId }) => {
+      // @ts-ignore
+       createHotkey({ name, coldkeyId });
+     },
+   });
+   const regenFormik = useFormik({
+     initialValues: {
+       name: "",
+       coldkeyId: null,
+       mnemonic: "",
+     },
+     validationSchema: object({
+       name: string()
+         .min(5)
+         .test("no_duplicate_hotkey", "is not unique", (value) => {
+           return !value || hotkeys?.map((c) => c.name).indexOf(value) === -1;
+         })
+         .required(),
+       coldkeyId: number().required(),
+       mnemonic: string()
+         .test("menmonic", "invalid mnemonic", (value) => {
+           const elevenSpaces = value?.match(/[ ]/g)?.length === 11;
+           const noDoubleSpace = !value?.match(/  /g);
+           const onlyLowercaseWords = !value?.match(/[^a-z ]/g);
+
+           return elevenSpaces && noDoubleSpace && onlyLowercaseWords;
+         })
+         .required(),
+     }),
+     onSubmit: async ({ name, coldkeyId, mnemonic }) => {
+       // @ts-ignore
+       regenHotkey({ name, coldkeyId, mnemonic });
+     },
+   });
 
   return (
     <Layout withNav>
@@ -115,7 +178,7 @@ const HotkeysPage: NextPage = () => {
         <Table.Body>
           {hotkeys.length ? (
             hotkeys.map((h) => (
-                // @ts-ignore 
+              // @ts-ignore
               <Table.Row key={h?.id}>
                 <Table.TextCell>{h.name}</Table.TextCell>
                 {/* @ts-ignore */}
@@ -172,10 +235,12 @@ const HotkeysPage: NextPage = () => {
             <>
               <SelectField
                 label="Coldkey"
-                value={coldkeyId+""}
+                isInvalid={!!regenFormik.errors.coldkeyId}
+                validationMessage={regenFormik.errors.coldkeyId}
+                value={regenFormik.values.coldkeyId + ""}
                 onChange={
                   // @ts-ignore
-                  (e) => setColdkeyId(e.target.value)
+                  (e) => regenFormik.setFieldValue("coldkeyId", e.target.value)
                 }
               >
                 <option>Choose a coldkey</option>
@@ -185,21 +250,15 @@ const HotkeysPage: NextPage = () => {
                   return <option value={c.id}>{c.name}</option>;
                 })}
               </SelectField>
-              <TextInputField
-                label="Name"
-                value={name}
-                onChange={({ target: { value } }: any) => setName(value)}
-              />
+              <FormikTextInput formik={regenFormik} label="Name" name="name" />
 
-              <TextInputField
+              <FormikTextInput
+                formik={regenFormik}
                 label="Mnemonic"
-                value={regenMnemonic}
-                onChange={({ target: { value } }: any) =>
-                  setRegenMnemonic(value)
-                }
+                name="mnemonic"
               />
 
-              <Button intent="success" onClick={regenHotkey}>
+              <Button intent="success" onClick={regenFormik.submitForm}>
                 Submit
               </Button>
             </>
@@ -229,22 +288,25 @@ const HotkeysPage: NextPage = () => {
             <>
               <SelectField
                 label="Coldkey"
-                value={coldkeyId+""}
+                isInvalid={!!formik.errors.coldkeyId}
+                validationMessage={formik.errors.coldkeyId}
+                value={formik.values.coldkeyId + ""}
                 onChange={
                   // @ts-ignore
-                  (e) => setColdkeyId(e.target.value)
+                  (e) => formik.setFieldValue("coldkeyId", e.target.value)
                 }
               >
                 <option>Choose a coldkey</option>
+
                 {coldkeys.map((c) => {
                   //@ts-ignore
                   return <option value={c.id}>{c.name}</option>;
                 })}
               </SelectField>
-              <TextInputField
+              <FormikTextInput
+              name="name"
+              formik={formik}
                 label="Name"
-                value={name}
-                onChange={({ target: { value } }: any) => setName(value)}
               />
 
               {mmnemonic ? (
@@ -259,15 +321,15 @@ const HotkeysPage: NextPage = () => {
                     onClick={() => {
                       setCreatePanelOpen(false);
                       setMnemonic("");
-                      setName("");
-                      setColdkeyId(null);
+                      formik.setFieldValue("name", "")
+                      formik.setFieldValue("coldkeyId", "")
                     }}
                   >
                     The mnemonic is written down
                   </Button>
                 </>
               ) : (
-                <Button intent="success" onClick={createHotkey}>
+                <Button intent="success" onClick={formik.submitForm}>
                   Submit
                 </Button>
               )}

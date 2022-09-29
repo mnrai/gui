@@ -1,15 +1,18 @@
 import * as React from "react";
 
-import { Layout } from "../../components";
+import { FormikTextInput, Layout } from "../../components";
 
 import { NextPage } from "next";
 
 import { useRouter } from "next/router";
-import { Button, CogIcon, CrossIcon, DotIcon, IconButton, Menu, MenuIcon, PlayIcon, Popover, Position, ResetIcon, SelectField, SendToIcon, SideSheet, Spinner, StopIcon, Switch, Table, TableHead, TextInputField } from "evergreen-ui";
+import { Button, CogIcon, CrossIcon, DotIcon, IconButton, Menu, MenuIcon, PlayIcon, Popover, Position, ResetIcon, SelectField, SendToIcon, SideSheet, Spinner, StopIcon, Switch, Table, TableHead } from "evergreen-ui";
 import { CopyBlock, dracula } from "react-code-blocks";
+import { object, string, number, date, InferType } from "yup";
+import * as yup from "yup";
 
 import { ColdkeyContext } from "context";
 import { useApi, useColdkeys, useHotkeys, useMinerData } from "hooks";
+import { useFormik } from "formik";
 
 const MinersPage: NextPage = () => {
   const Api = useApi();
@@ -20,16 +23,6 @@ const MinersPage: NextPage = () => {
   const {coldkeys,setColdkeys} = useColdkeys()
   const [didInit, setDidInit] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [coldkeyId, setColdkeyId] = React.useState<number|null>(null);
-  const [hotkeyId, setHotkeyId] = React.useState<number|null>(null);
-  const [autocast, setAutocast] = React.useState(true);
-  const [useCuda, setUseCuda] = React.useState(true);
-  const [name, setName] = React.useState("");
-  const [model, setModel] = React.useState("EleutherAI/gpt-neo-1.3B");
-  const [cudaDevice, setCudaDevice] = React.useState("0");
-  const [port, setPort] = React.useState("8081");
-  const [subtensorNetwork, serSubtensorNetwork] = React.useState("nakamoto");
-  const [subtensorIp, setSubtensorIp] = React.useState("");
   const [fetchedLogs, setFetchedLogs] = React.useState("");
 
   const [createPanelOpen, setCreatePanelOpen] = React.useState(false);
@@ -76,26 +69,49 @@ const MinersPage: NextPage = () => {
   }
  
 
-  const createMiner = async () => {
-    if (coldkeyId && hotkeyId && name&&
-model&&
-port&&
-cudaDevice&&
-subtensorNetwork) {
-      setLoading(true);
-      const res = await Api.Miners.create({ name, hotkeyId,
-model,
-port,
-cudaDevice,
-subtensorNetwork, autocast,
-useCuda,
-status:1,
-subtensorIp});
-      if (res.error) {
-        return;
-      }
-    getMiners();
+  const createMiner = async ({
+    coldkeyId,
+    hotkeyId,
+    name,
+    model,
+    port,
+    cudaDevice,
+    subtensorNetwork,
+    subtensorIp,
+    useCuda,
+    autocast,
+
+  }: {
+    coldkeyId: number;
+    hotkeyId: number;
+    name: string;
+    model: string;
+    port: string;
+    autocast?: boolean;
+    useCuda?: boolean;
+    cudaDevice?: number;
+    subtensorNetwork: string;
+    subtensorIp: string;
+  }) => {
+    setLoading(true);
+    const res = await Api.Miners.create({
+      name,
+      hotkeyId,
+      model,
+      port,
+      cudaDevice,
+      subtensorNetwork,
+      autocast,
+      useCuda,
+      status: 1,
+      subtensorIp,
+    });
+    if (res.error) {
+      return;
     }
+    getMiners();
+    setCreatePanelOpen(false)
+    formik.resetForm()
   };
 
   const _start =({name}:{name:string})=>async () => {
@@ -122,6 +138,64 @@ subtensorIp});
     const res = await Api.Miners.delete({name})
     getMiners()
   };
+
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      coldkeyId: null,
+      hotkeyId: null,
+      model: "EleutherAI/gpt-neo-1.3B",
+      port: "8073",
+      cudaDevice: 0,
+      subtensorNetwork: "nakamoto",
+      subtensorIp: "",
+      useCuda: true,
+      autocast: true,
+    },
+    validationSchema: object({
+      name: string()
+        .min(5)
+        .test("no_duplicate_name", "is not unique", (value) => {
+          return (
+            !value || minerData?.map((md) => md.name).indexOf(value) === -1
+          );
+        })
+        .required(),
+      hotkeyId: number().required(),
+      coldkeyId: number().required(),
+      cudaDevice: number().optional(),
+      model: string().required(),
+      port: string().required(),
+      subtensorNetwork: string().required(),
+      subtensorIp: string().optional(),
+      useCuda: yup.bool().required(),
+      autocast: yup.bool().required(),
+    }),
+    onSubmit: async ({ 
+      name, 
+      hotkeyId,
+      coldkeyId,
+      cudaDevice,
+      model,
+      port,
+      subtensorNetwork,
+      subtensorIp,
+      useCuda,
+      autocast,
+    }) => {
+      // @ts-ignore
+      createMiner({name, hotkeyId,coldkeyId,
+        cudaDevice,
+        model,
+        port,
+        subtensorNetwork,
+        subtensorIp,
+        useCuda,
+        autocast,
+      });
+    },
+  });
 
   return (
     <Layout withNav>
@@ -285,10 +359,13 @@ subtensorIp});
             <>
               <SelectField
                 label="Coldkey"
-                value={coldkeyId + ""}
+                value={formik.values.coldkeyId + ""}
+                isInvalid={!!formik.errors.coldkeyId}
+                validationMessage={formik.errors.coldkeyId}
                 onChange={
                   // @ts-ignore
-                  (e) => setColdkeyId(e.target.value || null)
+                  (e) =>
+                    formik.setFieldValue("coldkeyId", e.target.value || null)
                 }
               >
                 <option value="">Choose a coldkey</option>
@@ -297,47 +374,42 @@ subtensorIp});
                   return <option value={c.id}>{c.name}</option>;
                 })}
               </SelectField>
-              {coldkeyId ? (
-                <SelectField
-                  label="Hotkey"
-                  value={hotkeyId + ""}
-                  onChange={
-                    // @ts-ignore
-                    (e) => setHotkeyId(e.target.value)
-                  }
-                >
-                  <option>Choose a coldkey</option>
-                  {hotkeys
-                    // @ts-ignore
-                    .filter((h) => h?.ColdkeyId == parseInt(coldkeyId + ""))
-                    .map((h) => {
-                      //@ts-ignore
-                      return <option value={h.id}>{h.name}</option>;
-                    })}
-                </SelectField>
-              ) : null}
-              <TextInputField
-                label="Name"
-                value={name}
-                onChange={({ target: { value } }: any) => setName(value)}
-              />
-              <TextInputField
-                label="Model"
-                value={model}
-                onChange={({ target: { value } }: any) => setModel(value)}
-              />
-              <TextInputField
-                label="Port"
-                value={port}
-                onChange={({ target: { value } }: any) => setPort(value)}
-              />
+
+              <SelectField
+                disabled={!formik.values.coldkeyId}
+                label="Hotkey"
+                value={formik.values.hotkeyId + ""}
+                isInvalid={!!formik.errors.hotkeyId}
+                validationMessage={formik.errors.hotkeyId}
+                onChange={
+                  // @ts-ignore
+                  (e) => formik.setFieldValue("hotkeyId", e.target.value)
+                }
+              >
+                <option>Choose a coldkey</option>
+                {hotkeys
+                  // @ts-ignore
+                  .filter(
+                    (h) =>
+                      h?.ColdkeyId == parseInt(formik.values.coldkeyId + "")
+                  )
+                  .map((h) => {
+                    //@ts-ignore
+                    return <option value={h.id}>{h.name}</option>;
+                  })}
+              </SelectField>
+
+              <FormikTextInput label="Name" name="name" formik={formik} />
+              <FormikTextInput label="Model" name="model" formik={formik} />
+              <FormikTextInput label="Port" name="port" formik={formik} />
               <label>
                 <p>Do you want to use Autocast?</p>
                 <Switch
-                  checked={autocast}
+                  isInvalid={!!formik.errors.autocast}
+                  checked={formik.values.autocast}
                   onChange={
                     // @ts-ignore
-                    (e) => setAutocast(e.target.checked)
+                    (e) => formik.setFieldValue("autocast", e.target.checked)
                   }
                 ></Switch>
                 <br />
@@ -345,42 +417,44 @@ subtensorIp});
               <label>
                 <p>Do you want to use a GPU?</p>
                 <Switch
-                  checked={useCuda}
+                  isInvalid={!!formik.errors.useCuda}
+                  checked={formik.values.useCuda}
                   onChange={
                     // @ts-ignore
-                    (e) => setUseCuda(e.target.checked)
+                    (e) => formik.setFieldValue("useCuda", e.target.checked)
                   }
                 ></Switch>
                 <br />
               </label>
-              {useCuda ? (
-                <TextInputField
+              {formik.values.useCuda ? (
+                <FormikTextInput
+                  formik={formik}
+                  name="cudaDevice"
                   label="Cuda device"
                   placeholder="For example 0"
-                  value={cudaDevice}
-                  onChange={(e: any) => setCudaDevice(e.target.value)}
                 />
               ) : null}
               <label>
                 <p>Do you want to use a Local Subtensor?</p>
                 <Switch
-                  checked={subtensorNetwork === "local"}
+                  checked={formik.values.subtensorNetwork === "local"}
                   onChange={
                     // @ts-ignore
                     (e) =>
-                      serSubtensorNetwork(
+                      formik.setFieldValue(
+                        "subtensorNetwork",
                         e.target.checked ? "local" : "nakamoto"
                       )
                   }
                 ></Switch>
                 <br />
               </label>
-              {subtensorNetwork === "local" ? (
-                <TextInputField
+              {formik.values.subtensorNetwork === "local" ? (
+                <FormikTextInput
+                  formik={formik}
+                  name="subtensorIp"
                   label="Subtensor IP (without port number)"
                   placeholder="For example 127.0.0.1"
-                  value={subtensorIp}
-                  onChange={(e: any) => setSubtensorIp(e.target.value)}
                 />
               ) : null}
               <br />
@@ -392,7 +466,7 @@ subtensorIp});
               </p>
               <br />
               <br />
-              <Button intent="success" onClick={createMiner}>
+              <Button intent="success" onClick={formik.submitForm}>
                 Submit and try to start
               </Button>
               <br />
