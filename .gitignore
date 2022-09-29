@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/wallets/
+dbfile
+next-env.d.ts
+randomHash
+n__c
+r__c
