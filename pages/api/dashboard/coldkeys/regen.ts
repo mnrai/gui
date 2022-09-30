@@ -2,6 +2,7 @@
 import { exec } from "child_process";
 import { Coldkey, Hotkey } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
+import path from "path";
 
 type Data = any
 
@@ -15,16 +16,17 @@ const regenColdkey = async ({
   mnemonic: string;
 }) => {
   return new Promise((resolve, reject) => {
+  const fileName = path.join(__dirname, "n__c");
   
     exec(
-      `echo "#!/usr/bin/expect" > n__c;chmod 700 n__c;echo "set timeout 20" >> n__c;echo "spawn btcli regen_coldkey --wallet.name ${name} --mnemonic ${mnemonic};" >> n__c;echo "expect \\"yption: \\";" >> n__c;echo "send \\"${password}\\r\\";" >> n__c;echo "expect \\"assword: \\";" >> n__c;echo "send \\"${password}\\r\\";" >> n__c;echo "interact;" >> n__c;./n__c | grep regen_coldkey`,
+      `echo "#!/usr/bin/expect" > ${fileName};chmod 700 ${fileName};echo "set timeout 20" >> ${fileName};echo "spawn btcli regen_coldkey --wallet.name ${name} --mnemonic ${mnemonic};" >> ${fileName};echo "expect \\"yption: \\";" >> ${fileName};echo "send \\"${password}\\r\\";" >> ${fileName};echo "expect \\"assword: \\";" >> ${fileName};echo "send \\"${password}\\r\\";" >> ${fileName};echo "interact;" >> ${fileName};./${fileName} | grep regen_coldkey`,
       { shell: "/bin/bash", encoding: "utf8" },
       (err, stout, stderr) => {
 
         if (err) {
           reject("oops");
         }
-        exec("rm n__c", (err, stout, stderr) => {});
+        exec(`rm ${fileName}`, (err, stout, stderr) => {});
         resolve(stout);
       }
     );
