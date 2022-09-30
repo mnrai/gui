@@ -2,7 +2,8 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 export const sequelize = new Sequelize("db", "", "", {
 dialect:"sqlite",
-storage: "dbfile"
+storage: "dbfile",
+logging: false
 });
 
  class User extends Model {
