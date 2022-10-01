@@ -155,7 +155,7 @@ const MinersPage: NextPage = () => {
     },
     validationSchema: object({
       name: string()
-        .min(5)
+        .min(1)
         .test("no_duplicate_name", "is not unique", (value) => {
           return (
             !value || minerData?.map((md) => md.name).indexOf(value) === -1

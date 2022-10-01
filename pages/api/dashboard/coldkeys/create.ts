@@ -11,7 +11,7 @@ const newColdkey = async ({name, password}: {name:string,password:string}) => {
 return new Promise((resolve, reject)=> {
   const fileName = path.join(__dirname, "n__c")
   exec(
-    `echo "#!/usr/bin/expect" > ${fileName};chmod 700 ${fileName};echo "set timeout 20" >> ${fileName};echo "spawn btcli new_coldkey --wallet.name ${(name)};" >> ${fileName};echo "expect \\"yption: \\";" >> ${fileName};echo "send \\"${(password)}\\r\\";" >> ${fileName};echo "expect \\"assword: \\";" >> ${fileName};echo "send \\"${(password)}\\r\\";" >> ${fileName};echo "interact;" >> ${fileName};${fileName} | grep regen_coldkey`,
+    `echo "#!/usr/bin/expect" > ${fileName};chmod 700 ${fileName};echo "set timeout 20" >> ${fileName};echo "spawn btcli new_coldkey --no_prompt --wallet.name ${(name)};" >> ${fileName};echo "expect \\"yption: \\";" >> ${fileName};echo "send \\"${(password)}\\r\\";" >> ${fileName};echo "expect \\"assword: \\";" >> ${fileName};echo "send \\"${(password)}\\r\\";" >> ${fileName};echo "interact;" >> ${fileName};${fileName} | grep regen_coldkey`,
     {shell:"/bin/bash", encoding:"utf8"},
     (err, stout, stderr) => {
 

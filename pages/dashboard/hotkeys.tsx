@@ -99,7 +99,7 @@ const HotkeysPage: NextPage = () => {
      },
      validationSchema: object({
        name: string()
-         .min(5)
+         .min(1)
          .test("no_duplicate_hotkey", "is not unique", (value) => {
            return !value || hotkeys?.map((c) => c.name).indexOf(value) === -1;
          })
@@ -119,7 +119,7 @@ const HotkeysPage: NextPage = () => {
      },
      validationSchema: object({
        name: string()
-         .min(5)
+         .min(1)
          .test("no_duplicate_hotkey", "is not unique", (value) => {
            return !value || hotkeys?.map((c) => c.name).indexOf(value) === -1;
          })

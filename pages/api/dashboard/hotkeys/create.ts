@@ -14,10 +14,9 @@ const newHotkey = async ({
 }) => {
   return new Promise((resolve, reject) => {
     exec(
-      `btcli new_hotkey --wallet.name ${coldkeyName} --wallet.hotkey ${name} | grep regen_hotkey`,
+      `btcli new_hotkey --no_prompt --wallet.name ${coldkeyName} --wallet.hotkey ${name} | grep regen_hotkey`,
       { shell: "/bin/bash", encoding: "utf8" },
       (err, stout, stderr) => {
-
         if (err) {
           reject("oops");
         }

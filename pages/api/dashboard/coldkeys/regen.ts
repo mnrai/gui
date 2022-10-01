@@ -19,10 +19,9 @@ const regenColdkey = async ({
   const fileName = path.join(__dirname, "n__c");
   
     exec(
-      `echo "#!/usr/bin/expect" > ${fileName};chmod 700 ${fileName};echo "set timeout 20" >> ${fileName};echo "spawn btcli regen_coldkey --wallet.name ${name} --mnemonic ${mnemonic};" >> ${fileName};echo "expect \\"yption: \\";" >> ${fileName};echo "send \\"${password}\\r\\";" >> ${fileName};echo "expect \\"assword: \\";" >> ${fileName};echo "send \\"${password}\\r\\";" >> ${fileName};echo "interact;" >> ${fileName};${fileName} | grep regen_coldkey`,
+      `echo "#!/usr/bin/expect" > ${fileName};chmod 700 ${fileName};echo "set timeout 20" >> ${fileName};echo "spawn btcli regen_coldkey --no_prompt --wallet.name ${name} --mnemonic ${mnemonic};" >> ${fileName};echo "expect \\"yption: \\";" >> ${fileName};echo "send \\"${password}\\r\\";" >> ${fileName};echo "expect \\"assword: \\";" >> ${fileName};echo "send \\"${password}\\r\\";" >> ${fileName};echo "interact;" >> ${fileName};${fileName} | grep regen_coldkey`,
       { shell: "/bin/bash", encoding: "utf8" },
       (err, stout, stderr) => {
-
         if (err) {
           reject("oops");
         }

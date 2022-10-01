@@ -82,7 +82,7 @@ const ColdkeysPAge: NextPage = () => {
      },
      validationSchema: object({
        name: string()
-         .min(5)
+         .min(1)
          .test("no_duplicate", "is not unique", (value) => {
            return !value || coldkeys?.map((c) => c.name).indexOf(value) === -1;
          })
@@ -111,7 +111,7 @@ const ColdkeysPAge: NextPage = () => {
      },
      validationSchema: object({
        name: string()
-         .min(5)
+         .min(1)
          .test("no_duplicate", "is not unique", value=>{
           return !value || coldkeys?.map((c) => c.name).indexOf(value) === -1;
          })

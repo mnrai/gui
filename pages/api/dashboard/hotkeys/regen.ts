@@ -17,17 +17,16 @@ const regenHotkey = async ({
 }) => {
   return new Promise((resolve, reject) => {
     exec(
-      `btcli regen_hotkey --wallet.name ${coldkeyName} --wallet.hotkey ${name} --mnemonic ${mnemonic} | grep regen_hotkey`,
+      `btcli regen_hotkey --no_prompt --wallet.name ${coldkeyName} --wallet.hotkey ${name} --mnemonic ${mnemonic} | grep regen_hotkey`,
       { shell: "/bin/bash", encoding: "utf8" },
       (err, stout, stderr) => {
-
         if (err) {
           reject("oops");
         }
-         exec(
-           "rm -rf /workspace/wallets && cp -r ~/.bittensor/wallets /workspace/wallets",
-           (err, stout, stderr) => {}
-         );
+        exec(
+          "rm -rf /workspace/wallets && cp -r ~/.bittensor/wallets /workspace/wallets",
+          (err, stout, stderr) => {}
+        );
         resolve(stout);
       }
     );

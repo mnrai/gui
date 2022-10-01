@@ -20,7 +20,7 @@ const Login: NextPage = () => {
       password: "",
     },
     validationSchema: object({
-      username: string().min(5).required(),
+      username: string().min(1).required(),
       password: string().password().required(),
     }),
     onSubmit: async ({ username, password }) => {
