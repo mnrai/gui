@@ -5,7 +5,7 @@ import {
   FormikTextInput,
   Layout,
 } from "../components";
-import { TextInputField, SideSheet, Button } from "evergreen-ui";
+import { TextInputField, SideSheet, Button, Spinner } from "evergreen-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useApi } from "hooks";
@@ -14,6 +14,8 @@ import { object, string, number, date, InferType } from "yup";
 
 
 const Login: NextPage = () => {
+  const [loading, setLoading] = React.useState(false);
+
   const formik = useFormik({
     initialValues: {
       username: "",
@@ -24,11 +26,13 @@ const Login: NextPage = () => {
       password: string().password().required(),
     }),
     onSubmit: async ({ username, password }) => {
-
+      setLoading(true)
       const res = await Api.User.login({ username, password });
       if (!res.error) {
         onSuccess();
       }
+      setLoading(false);
+
     },
   });
   const Api = useApi();
@@ -65,7 +69,17 @@ checkToken()
           width: "100%",
         }}
       >
-        <div style={{ maxWidth: 500, maxHeight: 200, marginTop:100, display: "flex" , flexDirection: "column", alignItems:"center"}}>
+       {loading ? (
+                <div
+                  style={{
+                    padding: 20,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Spinner />
+                </div>
+              ) : <div style={{ maxWidth: 500, maxHeight: 200, marginTop:100, display: "flex" , flexDirection: "column", alignItems:"center"}}>
           <FormikTextInput
           style={{width:400}}
             formik={formik}
@@ -84,7 +98,7 @@ checkToken()
             onChange={(e: any) => setPassword(e.target.value)}
           ></FormikTextInput>
           <Button onClick={formik.submitForm}>Login</Button>
-        </div>
+        </div>}
       </div>
     </Layout>
   );

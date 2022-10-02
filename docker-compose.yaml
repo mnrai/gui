@@ -9,4 +9,3 @@ services:
       - "3001:3000"
     volumes:
       - "./:/workspace"
-    platform: linux/amd64

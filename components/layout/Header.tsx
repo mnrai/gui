@@ -2,13 +2,23 @@ import * as React from "react";
 // import { graphql, HeadFC, Link, useStaticQuery } from "gatsby";
 import { Select } from "evergreen-ui";
 import Link from "next/link";
-import { useColdkeys, useHotkeys } from "hooks";
+import { useColdkeys,useApi, useHotkeys } from "hooks";
+import { useRouter } from "next/router";
+
 
 
 
 const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
+  const Api = useApi();
+  const router = useRouter()
+
   const {coldkeys} =useColdkeys()
   const {hotkeys} =useHotkeys()
+
+  const _logout =async() => {
+    const res = await Api.User.logout()
+    router.push("/")
+  }
   return (
     <div>
       <p
@@ -26,7 +36,6 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
         on this page.
       </p>
 
-    
       {withNav ? (
         <header
           style={{
@@ -36,6 +45,7 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
             flexDirection: "row",
             display: "flex",
             alignItems: "center",
+            justifyContent:"space-between",
             position: "relative",
           }}
         >
@@ -59,49 +69,71 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
                   marginBlockStart: 0,
                   padding: 0,
                   paddingRight: 20,
-                  cursor:"pointer"
+                  cursor: "pointer",
                 }}
               >
                 COLDKEYS
               </p>
             </Link>
-            {coldkeys.length?<Link href="/dashboard/hotkeys">
-              <p
-                style={{
-                  fontWeight: "400",
-                  letterSpacing: "2px",
-                  color: "#393939",
-                  marginTop: 0,
-                  marginBottom: 0,
-                  marginBlockEnd: 0,
-                  marginBlockStart: 0,
-                  padding: 0,
-                  paddingRight: 20,
-                  cursor:"pointer"
-                }}
-              >
-                HOTKEYS
-              </p>
-            </Link>:null}
-            {hotkeys.length ?<Link href="/dashboard/miners">
-              <p
-                style={{
-                  fontWeight: "400",
-                  letterSpacing: "2px",
-                  color: "#393939",
-                  marginTop: 0,
-                  marginBottom: 0,
-                  marginBlockEnd: 0,
-                  marginBlockStart: 0,
-                  padding: 0,
-                  paddingRight: 20,
-                  cursor:"pointer"
-                }}
-              >
-                MINERS
-              </p>
-            </Link>:null}
+            {coldkeys.length ? (
+              <Link href="/dashboard/hotkeys">
+                <p
+                  style={{
+                    fontWeight: "400",
+                    letterSpacing: "2px",
+                    color: "#393939",
+                    marginTop: 0,
+                    marginBottom: 0,
+                    marginBlockEnd: 0,
+                    marginBlockStart: 0,
+                    padding: 0,
+                    paddingRight: 20,
+                    cursor: "pointer",
+                  }}
+                >
+                  HOTKEYS
+                </p>
+              </Link>
+            ) : null}
+            {hotkeys.length ? (
+              <Link href="/dashboard/miners">
+                <p
+                  style={{
+                    fontWeight: "400",
+                    letterSpacing: "2px",
+                    color: "#393939",
+                    marginTop: 0,
+                    marginBottom: 0,
+                    marginBlockEnd: 0,
+                    marginBlockStart: 0,
+                    padding: 0,
+                    paddingRight: 20,
+                    cursor: "pointer",
+                  }}
+                >
+                  MINERS
+                </p>
+              </Link>
+            ) : null}
           </div>
+          <p
+            style={{
+              fontWeight: "400",
+              letterSpacing: "2px",
+              color: "#393939",
+              marginTop: 0,
+              marginBottom: 0,
+              marginBlockEnd: 0,
+              marginBlockStart: 0,
+              padding: 0,
+              paddingRight: 20,
+              cursor: "pointer",
+              alignSelf: "flex-end",
+            }}
+            onClick={_logout}
+          >
+            LOGOUT
+          </p>
         </header>
       ) : null}
     </div>

@@ -15,7 +15,7 @@ export default authHandler(async function handler(
    try {
      const {
        name,
-       hotkeyId,
+       hotkeyIds,
        model,
        autocast,
        port,
@@ -27,7 +27,7 @@ export default authHandler(async function handler(
      } = JSON.parse(req.body);
      if (
        !name ||
-       !hotkeyId ||
+       !hotkeyIds ||
        !model ||
        !port ||
        cudaDevice === undefined ||
@@ -37,16 +37,18 @@ export default authHandler(async function handler(
        
        throw new Error("coldkey unknown");
      }
+      console.log({ hotkeyIds });
 
-     const hotkey = await Hotkey.findOne({ where: { id: hotkeyId } });
-     const coldkey = await Coldkey.findOne({ where: { id: hotkey?.ColdkeyId } });
-
-     if (!coldkey) {
-       throw new Error("coldkey unknown");
-     }
+     const hotkeys = await Promise.all(hotkeyIds.map((hotkeyId:number)=> Hotkey.findOne({ where: { id: hotkeyId } })))
+      console.log({hotkeys})
+     const hotkey = hotkeys[0];
      if (!hotkey) {
        throw new Error("hotkey unknown");
-     }
+      }
+      const coldkey = await Coldkey.findOne({ where: { id: hotkey?.ColdkeyId } });
+      if (!coldkey) {
+        throw new Error("coldkey unknown");
+      }
 
 
      const miner = await Miner.create({
@@ -62,11 +64,11 @@ export default authHandler(async function handler(
        status,
      });
     // @ts-ignore
-     miner.setHotkey(hotkey);
+     miner.addHotkeys(hotkeys);
 
      startMiner({
        name,
-       hotkeyName: hotkey.name,
+       hotkeys: hotkeys,
        coldkeyName: coldkey.name,
        model,
        autocast,
@@ -81,7 +83,7 @@ export default authHandler(async function handler(
        miner,
      });
    } catch (e) {
-
+console.log({e})
      return res.status(401).json({ error: "oops there was an issue" });
    }
 }

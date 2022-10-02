@@ -21,22 +21,22 @@ export default authHandler(async function handler(
      return res.status(401).json({ error: "oops there was an issue" });
      }
      const miner = await Miner.findOne({ where: { name }, include: Hotkey });
-
+     console.log({miner})
 
      if (!miner) {
        throw new Error("miner unknown");
      }
-     const hotkey = miner.Hotkey
-     const coldkey = await Coldkey.findOne({ where: { id:hotkey.ColdkeyId } });
-  if (!hotkey) {
-    throw new Error("hotkey unknown");
-  }
+     const hotkeys = await miner.getHotkeys()
+     if (!hotkeys?.length) {
+       throw new Error("hotkeys unknown");
+      }
+      const coldkey = await Coldkey.findOne({ where: { id:hotkeys[0].ColdkeyId } });
   if (!coldkey) {
     throw new Error("coldkey unknown");
   }
      startMiner({
        name: miner.name,
-       hotkeyName: hotkey.name,
+       hotkeys: hotkeys,
        coldkeyName: coldkey.name,
        model: miner.model,
        autocast: miner.autocast,

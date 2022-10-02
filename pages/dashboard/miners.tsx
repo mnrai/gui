@@ -5,7 +5,7 @@ import { FormikTextInput, Layout } from "../../components";
 import { NextPage } from "next";
 
 import { useRouter } from "next/router";
-import { Button, CogIcon, CrossIcon, DotIcon, IconButton, Menu, MenuIcon, PlayIcon, Popover, Position, ResetIcon, SelectField, SendToIcon, SideSheet, Spinner, StopIcon, Switch, Table, TableHead } from "evergreen-ui";
+import { Button, CogIcon, CrossIcon, DotIcon, FormField, IconButton, Menu, MenuIcon, PlayIcon, Popover, Position, ResetIcon, SelectField, SelectMenu, SendToIcon, SideSheet, Spinner, StopIcon, Switch, Table, TableHead } from "evergreen-ui";
 import { CopyBlock, dracula } from "react-code-blocks";
 import { object, string, number, date, InferType } from "yup";
 import * as yup from "yup";
@@ -71,7 +71,7 @@ const MinersPage: NextPage = () => {
 
   const createMiner = async ({
     coldkeyId,
-    hotkeyId,
+    hotkeyIds,
     name,
     model,
     port,
@@ -83,7 +83,7 @@ const MinersPage: NextPage = () => {
 
   }: {
     coldkeyId: number;
-    hotkeyId: number;
+    hotkeyIds: number;
     name: string;
     model: string;
     port: string;
@@ -96,7 +96,7 @@ const MinersPage: NextPage = () => {
     setLoading(true);
     const res = await Api.Miners.create({
       name,
-      hotkeyId,
+      hotkeyIds,
       model,
       port,
       cudaDevice,
@@ -144,7 +144,7 @@ const MinersPage: NextPage = () => {
     initialValues: {
       name: "",
       coldkeyId: null,
-      hotkeyId: null,
+      hotkeyIds: [],
       model: "EleutherAI/gpt-neo-1.3B",
       port: "8073",
       cudaDevice: 0,
@@ -162,7 +162,7 @@ const MinersPage: NextPage = () => {
           );
         })
         .required(),
-      hotkeyId: number().required(),
+      hotkeyIds: yup.array().of(number()).min(1, "at least 1 hotkey must be selected").required(),
       coldkeyId: number().required(),
       cudaDevice: number().optional(),
       model: string().required(),
@@ -174,7 +174,7 @@ const MinersPage: NextPage = () => {
     }),
     onSubmit: async ({ 
       name, 
-      hotkeyId,
+      hotkeyIds,
       coldkeyId,
       cudaDevice,
       model,
@@ -185,7 +185,7 @@ const MinersPage: NextPage = () => {
       autocast,
     }) => {
       // @ts-ignore
-      createMiner({name, hotkeyId,coldkeyId,
+      createMiner({name, hotkeyIds,coldkeyId,
         cudaDevice,
         model,
         port,
@@ -224,7 +224,7 @@ const MinersPage: NextPage = () => {
         <Table.Head>
           <Table.TextHeaderCell>NAME</Table.TextHeaderCell>
           <Table.TextHeaderCell>COLDKEY</Table.TextHeaderCell>
-          <Table.TextHeaderCell>HOTKEY</Table.TextHeaderCell>
+          <Table.TextHeaderCell>HOTKEY(S)</Table.TextHeaderCell>
           <Table.TextHeaderCell></Table.TextHeaderCell>
         </Table.Head>
         <Table.Body>
@@ -253,11 +253,17 @@ const MinersPage: NextPage = () => {
                 <Table.TextCell>
                   {/* @ts-ignore */}
 
-                  {coldkeys?.find((c) => c.id === h?.Hotkey?.ColdkeyId)?.name}
+                  {
+                    coldkeys?.find(
+                      (c) => h?.Hotkeys?.length && c.id === h?.Hotkeys[0]?.ColdkeyId
+                    )?.name
+                  }
                 </Table.TextCell>
                 {/* @ts-ignore */}
 
-                <Table.TextCell>{h?.Hotkey?.name}</Table.TextCell>
+                <Table.TextCell>
+                  {h?.Hotkeys?.map((h) => h.name).join(",")}
+                </Table.TextCell>
                 <Table.TextCell>
                   <Popover
                     position={Position.BOTTOM_LEFT}
@@ -374,32 +380,49 @@ const MinersPage: NextPage = () => {
                   return <option value={c.id}>{c.name}</option>;
                 })}
               </SelectField>
-
-              <SelectField
-                disabled={!formik.values.coldkeyId}
-                label="Hotkey"
-                value={formik.values.hotkeyId + ""}
-                isInvalid={!!formik.errors.hotkeyId}
-                validationMessage={formik.errors.hotkeyId}
-                onChange={
-                  // @ts-ignore
-                  (e) => formik.setFieldValue("hotkeyId", e.target.value)
-                }
+              <FormField
+                label={"What hotkey(s) do you want to use"}
+                isInvalid={!!formik.errors.hotkeyIds}
+                validationMessage={formik.errors.hotkeyIds}
               >
-                <option>Choose a coldkey</option>
-                {hotkeys
-                  // @ts-ignore
-                  .filter(
-                    (h) =>
-                      // @ts-ignore
-                      h?.ColdkeyId == parseInt(formik.values.coldkeyId + "")
-                  )
-                  .map((h) => {
-                    //@ts-ignore
-                    return <option value={h.id}>{h.name}</option>;
-                  })}
-              </SelectField>
+                <SelectMenu
+                  // disabled={!formik.values.coldkeyId}
+                  options={hotkeys
+                    // @ts-ignore
+                    .filter(
+                      (h) =>
+                        // @ts-ignore
+                        h?.ColdkeyId == parseInt(formik.values.coldkeyId + "")
+                    )
+                    .map((h) => {
+                      //@ts-ignore
+                      return { label: h.name, value: h.id };
+                    })}
+                  title="Hotkeys"
+                  selected={formik.values.hotkeyIds}
+                  onSelect={
+                    // @ts-ignore
+                    (item) =>
+                      formik.setFieldValue("hotkeyIds", [
+                        ...formik.values.hotkeyIds,
+                        item.value,
+                      ])
+                  }
+                  onDeselect={
+                    // @ts-ignore
+                    (item) =>
+                      formik.setFieldValue(
+                        "hotkeyIds",
+                        formik.values.hotkeyIds.filter((h) => h !== item.value)
+                      )
+                  }
+                >
+                  <Button>Choose hotkey(s)</Button>
+                </SelectMenu>
+              </FormField>
 
+              <br />
+              <br />
               <FormikTextInput label="Name" name="name" formik={formik} />
               <FormikTextInput label="Model" name="model" formik={formik} />
               <FormikTextInput label="Port" name="port" formik={formik} />
@@ -436,20 +459,37 @@ const MinersPage: NextPage = () => {
                 />
               ) : null}
               <label>
-                <p>Do you want to use a Local Subtensor?</p>
+                <p>Do you want to use Testnet?</p>
                 <Switch
-                  checked={formik.values.subtensorNetwork === "local"}
+                  checked={formik.values.subtensorNetwork === "nobunaga"}
                   onChange={
                     // @ts-ignore
                     (e) =>
                       formik.setFieldValue(
                         "subtensorNetwork",
-                        e.target.checked ? "local" : "nakamoto"
+                        e.target.checked ? "nobunaga" : "nakamoto"
                       )
                   }
                 ></Switch>
                 <br />
               </label>
+              {formik.values.subtensorNetwork !== "nobunaga" ? (
+                <label>
+                  <p>Do you want to use a Local Subtensor?</p>
+                  <Switch
+                    checked={formik.values.subtensorNetwork === "local"}
+                    onChange={
+                      // @ts-ignore
+                      (e) =>
+                        formik.setFieldValue(
+                          "subtensorNetwork",
+                          e.target.checked ? "local" : "nakamoto"
+                        )
+                    }
+                  ></Switch>
+                  <br />
+                </label>
+              ) : null}
               {formik.values.subtensorNetwork === "local" ? (
                 <FormikTextInput
                   formik={formik}
@@ -462,8 +502,8 @@ const MinersPage: NextPage = () => {
               <br />
               <p>
                 If you click the following button then I think you might start
-                registering a hotkey and to run core_server with an if the
-                hotkey is or gets registered
+                registering hotkey(s) and to run core_server(s) if the
+                hotkey(s) are or get registered
               </p>
               <br />
               <br />

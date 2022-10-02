@@ -14,7 +14,7 @@ export default authHandler(async function handler(
 
    try {
   
-     const miners = await Miner.findAll({include: [Hotkey]})
+     const miners = await Miner.findAll({include: Hotkey})
 
      res.status(200).json({
        miners,

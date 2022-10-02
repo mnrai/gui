@@ -7,9 +7,9 @@ logging: false
 });
 
  class User extends Model {
-  declare id :number;
-  declare username :string;
-  declare password :string;
+  // declare id :number;
+  // declare username :string;
+  // declare password :string;
 }
 
 User.init({
@@ -23,8 +23,8 @@ User.init({
 }, {sequelize, timestamps:true});
 
  class Coldkey extends Model {
-   declare id: number;
-   declare name: string;
+  //  declare id: number;
+  //  declare name: string;
  }
  Coldkey.init(
    {
@@ -39,11 +39,11 @@ User.init({
  );
 
  class Hotkey extends Model {
-   declare id: number;
-   declare coldkeyId: number;
-   declare name: string;
-   declare Coldkey: Coldkey;
-   declare ColdkeyId: number;
+  //  declare id: number;
+  //  declare coldkeyId: number;
+  //  declare name: string;
+  //  declare Coldkey: Coldkey;
+  //  declare ColdkeyId: number;
  }
  Hotkey.init(
    {
@@ -58,18 +58,17 @@ User.init({
    { sequelize, timestamps: true }
  );
  class Miner extends Model {
-   declare id: number;
-   declare name: string;
-   declare model: string;
-   declare autocast: boolean;
-   declare port: string;
-   declare cudaDevice: number;
-   declare useCuda: boolean;
-   declare subtensorNetwork: string;
-   declare subtensorIp: string;
-   declare status: number;
-   declare Hotkey: Hotkey;
-   declare HotkeyId: number;
+  //  declare id: number;
+  //  declare name: string;
+  //  declare model: string;
+  //  declare autocast: boolean;
+  //  declare port: string;
+  //  declare cudaDevice: number;
+  //  declare useCuda: boolean;
+  //  declare subtensorNetwork: string;
+  //  declare subtensorIp: string;
+  //  declare status: number;
+  //  declare Hotkeys: Hotkey[];
  }
  Miner.init(
    {
@@ -93,7 +92,7 @@ User.init({
 
  Coldkey.hasMany(Hotkey)
  Hotkey.belongsTo(Coldkey)
- Miner.belongsTo(Hotkey);
+ Miner.hasMany(Hotkey);
 
 
 

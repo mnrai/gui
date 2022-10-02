@@ -1,5 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { exec } from "child_process";
+import { Hotkey } from "models";
 import type { NextApiRequest, NextApiResponse } from "next";
 const randomstring = require("randomstring");
 const jsonwebtoken = require("jsonwebtoken");
@@ -44,7 +45,7 @@ export const authHandler =
 
   export const startMiner = async ({
     name,
-    hotkeyName,
+    hotkeys,
     coldkeyName,
     model,
     autocast,
@@ -55,7 +56,7 @@ export const authHandler =
     subtensorIp,
   }: {
     name: string;
-    hotkeyName: string;
+    hotkeys: Hotkey[];
     coldkeyName: string;
     model: string;
     autocast: boolean;
@@ -65,35 +66,68 @@ export const authHandler =
     subtensorNetwork: string;
     subtensorIp: string;
   }) => {
-    return new Promise((resolve, reject) => {
-      const options = `--subtensor.network ${subtensorNetwork} --wallet.name ${coldkeyName} ${
-        useCuda ? "--subtensor.register.cuda.use_cuda" : ""
-      }${useCuda ? ` --subtensor.register.cuda.dev_id ${cudaDevice}` : ""}${
-        useCuda ? ` --subtensor.register.cuda.TPB 512` : ""
-      }${useCuda ? ` --subtensor.register.cuda.update_interval 70_000` : ""}${
-        useCuda ? `` : " --subtensor.register.num_processes 4 "
-      } --no_prompt ${
-        subtensorIp && subtensorNetwork === "local"
-          ? `--subtensor.chain_endpoint ${subtensorIp}:9944 `
-          : ""
-      }--wallet.hotkey ${hotkeyName} `;
-      exec(
-        `pm2 start ~/.bittensor/bittensor/bittensor/_neuron/text/core_server/main.py --name ${name} --time --interpreter python3 -- --logging.debug --neuron.model_name ${model}${
-          useCuda ? `${autocast ? " --neuron.autocast " : ""}` : ""
-        }  --axon.port ${port} --neuron.device ${
-          useCuda ? `cuda:${cudaDevice}` : "cpu"
-        } ${options}`,
-        { shell: "/bin/bash", encoding: "utf8" },
-        (err, stout, stderr) => {
-console.log({ err, stout, stderr });
-          if (err) {
-            reject("oops");
+    if(hotkeys.length === 1) {
+
+      return new Promise((resolve, reject) => {
+        const options = `--subtensor.network ${subtensorNetwork} --wallet.name ${coldkeyName} ${
+          useCuda ? "--subtensor.register.cuda.use_cuda" : ""
+        }${useCuda ? ` --subtensor.register.cuda.dev_id ${cudaDevice}` : ""}${
+          useCuda ? ` --subtensor.register.cuda.TPB 512` : ""
+        }${useCuda ? ` --subtensor.register.cuda.update_interval 70_000` : ""}${
+          useCuda ? `` : " --subtensor.register.num_processes 4 "
+        } --no_prompt ${
+          subtensorIp && subtensorNetwork === "local"
+            ? `--subtensor.chain_endpoint ${subtensorIp}:9944 `
+            : ""
+        }--wallet.hotkey ${hotkeys[0].name} `;
+        exec(
+          `pm2 start ~/.bittensor/bittensor/bittensor/_neuron/text/core_server/main.py --name ${name} --time --interpreter python3 -- --logging.debug --neuron.model_name ${model}${
+            useCuda ? `${autocast ? " --neuron.autocast " : ""}` : ""
+          }  --axon.port ${port} --neuron.device ${
+            useCuda ? `cuda:${cudaDevice}` : "cpu"
+          } ${options}`,
+          { shell: "/bin/bash", encoding: "utf8" },
+          (err, stout, stderr) => {
+            console.log({ err, stout, stderr });
+            if (err) {
+              reject("oops");
+            }
+  
+            resolve(stout);
           }
-          
-          resolve(stout);
-        }
-      );
-    });
+        );
+      });
+    }   else  {
+      return new Promise((resolve, reject) => {
+        const options = `--subtensor.network ${subtensorNetwork} --wallet.name ${coldkeyName} ${
+          useCuda ? "--subtensor.register.cuda.use_cuda" : ""
+        }${useCuda ? ` --subtensor.register.cuda.dev_id ${cudaDevice}` : ""}${
+          useCuda ? ` --subtensor.register.cuda.TPB 512` : ""
+        }${useCuda ? ` --subtensor.register.cuda.update_interval 70_000` : ""}${
+          useCuda ? `` : " --subtensor.register.num_processes 4 "
+        } --no_prompt ${
+          subtensorIp && subtensorNetwork === "local"
+            ? `--subtensor.chain_endpoint ${subtensorIp}:9944 `
+            : ""
+        } `;
+        exec(
+          `pm2 start ~/.bittensor/bittensor/bittensor/_neuron/text/core_server/multi.py --name ${name} --time --interpreter python3 -- ${hotkeys.map(h=>h.name).join(",")} --logging.debug --neuron.model_name ${model}${
+            useCuda ? `${autocast ? " --neuron.autocast " : ""}` : ""
+          }  --axon.port ${port} --neuron.device ${
+            useCuda ? `cuda:${cudaDevice}` : "cpu"
+          } ${options}`,
+          { shell: "/bin/bash", encoding: "utf8" },
+          (err, stout, stderr) => {
+            console.log({ err, stout, stderr });
+            if (err) {
+              reject("oops");
+            }
+
+            resolve(stout);
+          }
+        );
+      });
+    }
   };
 
   export const stopMiner = async ({

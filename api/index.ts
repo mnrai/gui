@@ -46,6 +46,14 @@ export const Api = (onLoggedOut: ()=>void) =>{
           },
         });
       },
+      logout: () => {
+        return fetchFromApi({
+          path: "auth/logout",
+          method: "POST",
+          body: {
+          },
+        });
+      },
       checkToken: () => {
         return fetchFromApi({
           path: "auth/checkToken",
@@ -133,7 +141,7 @@ export const Api = (onLoggedOut: ()=>void) =>{
     Miners: {
       create: ({
         name,
-        hotkeyId,
+        hotkeyIds,
         model,
         autocast,
         port,
@@ -144,7 +152,7 @@ export const Api = (onLoggedOut: ()=>void) =>{
         status,
       }: {
         name: string;
-        hotkeyId: number;
+        hotkeyIds: number[];
         status: number;
         model: string;
         autocast: boolean;
@@ -159,7 +167,7 @@ export const Api = (onLoggedOut: ()=>void) =>{
           method: "POST",
           body: {
             name,
-            hotkeyId,
+            hotkeyIds,
             model,
             autocast,
             port,
