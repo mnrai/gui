@@ -21,7 +21,7 @@ export default authHandler(async function handler(
      return res.status(401).json({ error: "oops there was an issue" });
      }
      const miner = await Miner.findOne({ where: { name }, include: Hotkey });
-     console.log({miner})
+
 
      if (!miner) {
        throw new Error("miner unknown");

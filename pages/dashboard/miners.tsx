@@ -5,7 +5,7 @@ import { FormikTextInput, Layout } from "../../components";
 import { NextPage } from "next";
 
 import { useRouter } from "next/router";
-import { Button, CogIcon, CrossIcon, DotIcon, FormField, IconButton, Menu, MenuIcon, PlayIcon, Popover, Position, ResetIcon, SelectField, SelectMenu, SendToIcon, SideSheet, Spinner, StopIcon, Switch, Table, TableHead } from "evergreen-ui";
+import { Alert, Button, CogIcon, CrossIcon, DotIcon, FormField, IconButton, Menu, MenuIcon, PlayIcon, Popover, Position, ResetIcon, SelectField, SelectMenu, SendToIcon, SideSheet, Spinner, StopIcon, Switch, Table, TableHead } from "evergreen-ui";
 import { CopyBlock, dracula } from "react-code-blocks";
 import { object, string, number, date, InferType } from "yup";
 import * as yup from "yup";
@@ -255,7 +255,8 @@ const MinersPage: NextPage = () => {
 
                   {
                     coldkeys?.find(
-                      (c) => h?.Hotkeys?.length && c.id === h?.Hotkeys[0]?.ColdkeyId
+                      (c) =>
+                        h?.Hotkeys?.length && c.id === h?.Hotkeys[0]?.ColdkeyId
                     )?.name
                   }
                 </Table.TextCell>
@@ -370,8 +371,10 @@ const MinersPage: NextPage = () => {
                 validationMessage={formik.errors.coldkeyId}
                 onChange={
                   // @ts-ignore
-                  (e) =>
-                    formik.setFieldValue("coldkeyId", e.target.value || null)
+                  (e) => {
+                    formik.setFieldValue("hotkeyIds", []);
+                    formik.setFieldValue("coldkeyId", e.target.value || null);
+                  }
                 }
               >
                 <option value="">Choose a coldkey</option>
@@ -380,6 +383,11 @@ const MinersPage: NextPage = () => {
                   return <option value={c.id}>{c.name}</option>;
                 })}
               </SelectField>
+              {formik.values.hotkeyIds.length > 1 ? (
+                <Alert intent="warning" marginBottom={32}>
+                  Using multiple hotkeys in 1 PM2 process might be risky
+                </Alert>
+              ) : null}
               <FormField
                 label={"What hotkey(s) do you want to use"}
                 isInvalid={!!formik.errors.hotkeyIds}
@@ -410,11 +418,12 @@ const MinersPage: NextPage = () => {
                   }
                   onDeselect={
                     // @ts-ignore
-                    (item) =>
+                    (item) => {
                       formik.setFieldValue(
                         "hotkeyIds",
                         formik.values.hotkeyIds.filter((h) => h !== item.value)
-                      )
+                      );
+                    }
                   }
                 >
                   <Button>Choose hotkey(s)</Button>
@@ -425,7 +434,40 @@ const MinersPage: NextPage = () => {
               <br />
               <FormikTextInput label="Name" name="name" formik={formik} />
               <FormikTextInput label="Model" name="model" formik={formik} />
-              <FormikTextInput label="Port" name="port" formik={formik} />
+              {process.env.NEXT_PUBLIC_IS_POD ? (
+                <SelectField
+                  label="Coldkey"
+                  value={formik.values.port + ""}
+                  isInvalid={!!formik.errors.port}
+                  validationMessage={formik.errors.port}
+                  onChange={
+                    // @ts-ignore
+                    (e) => {
+                      formik.setFieldValue("port", e.target.value || null);
+                    }
+                  }
+                >
+                  <option value="">Choose a port</option>
+                  {[0,1,2,3,4,5,6,7,8,9].map((p) => {
+                    //@ts-ignore
+                    return (
+                      <option
+                        value={`$RUNPOD_TCP_PORT_7000${p}`}
+                      >{`$RUNPOD_TCP_PORT_7000${p}`}</option>
+                    );
+                  })}
+                </SelectField>
+              ) : (
+                <FormikTextInput label="Port" name="port" formik={formik} />
+              )}
+              {formik.values.hotkeyIds.length > 1 ? (
+                <Alert intent="warning" marginBottom={32}>
+                  If you use multiple hotkeys on 1 PM2 process then you can
+                  expect that the script might try to use the ports that follow
+                  the port you entered above this warning.
+                </Alert>
+              ) : null}
+
               <label>
                 <p>Do you want to use Autocast?</p>
                 <Switch
@@ -502,8 +544,8 @@ const MinersPage: NextPage = () => {
               <br />
               <p>
                 If you click the following button then I think you might start
-                registering hotkey(s) and to run core_server(s) if the
-                hotkey(s) are or get registered
+                registering hotkey(s) and to run core_server(s) if the hotkey(s)
+                are or get registered
               </p>
               <br />
               <br />

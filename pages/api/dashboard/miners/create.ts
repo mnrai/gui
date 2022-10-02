@@ -37,10 +37,10 @@ export default authHandler(async function handler(
        
        throw new Error("coldkey unknown");
      }
-      console.log({ hotkeyIds });
+
 
      const hotkeys = await Promise.all(hotkeyIds.map((hotkeyId:number)=> Hotkey.findOne({ where: { id: hotkeyId } })))
-      console.log({hotkeys})
+
      const hotkey = hotkeys[0];
      if (!hotkey) {
        throw new Error("hotkey unknown");
@@ -83,7 +83,7 @@ export default authHandler(async function handler(
        miner,
      });
    } catch (e) {
-console.log({e})
+
      return res.status(401).json({ error: "oops there was an issue" });
    }
 }

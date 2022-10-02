@@ -88,7 +88,7 @@ export const authHandler =
           } ${options}`,
           { shell: "/bin/bash", encoding: "utf8" },
           (err, stout, stderr) => {
-            console.log({ err, stout, stderr });
+
             if (err) {
               reject("oops");
             }
@@ -118,7 +118,7 @@ export const authHandler =
           } ${options}`,
           { shell: "/bin/bash", encoding: "utf8" },
           (err, stout, stderr) => {
-            console.log({ err, stout, stderr });
+
             if (err) {
               reject("oops");
             }
@@ -202,7 +202,7 @@ export const authHandler =
         `pm2 logs ${name} --lines 100 --nostream`,
         { shell: "/bin/bash", encoding: "utf8" },
         (err, stout, stderr) => {
-console.log({ err, stout, stderr });
+
 
           if (err) {
             reject("oops");
