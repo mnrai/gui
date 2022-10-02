@@ -436,7 +436,7 @@ const MinersPage: NextPage = () => {
               <FormikTextInput label="Model" name="model" formik={formik} />
               {process.env.NEXT_PUBLIC_IS_POD ? (
                 <SelectField
-                  label="Coldkey"
+                  label="Port"
                   value={formik.values.port + ""}
                   isInvalid={!!formik.errors.port}
                   validationMessage={formik.errors.port}
