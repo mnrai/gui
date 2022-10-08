@@ -115,6 +115,26 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
                 </p>
               </Link>
             ) : null}
+            {hotkeys.length ? (
+              <Link href="/dashboard/chart">
+                <p
+                  style={{
+                    fontWeight: "400",
+                    letterSpacing: "2px",
+                    color: "#393939",
+                    marginTop: 0,
+                    marginBottom: 0,
+                    marginBlockEnd: 0,
+                    marginBlockStart: 0,
+                    padding: 0,
+                    paddingRight: 20,
+                    cursor: "pointer",
+                  }}
+                >
+                  CHART
+                </p>
+              </Link>
+            ) : null}
           </div>
           <p
             style={{

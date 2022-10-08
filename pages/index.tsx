@@ -30,8 +30,10 @@ const Login: NextPage = () => {
       const res = await Api.User.login({ username, password });
       if (!res.error) {
         onSuccess();
+      }else {
+
+        setLoading(false);
       }
-      setLoading(false);
 
     },
   });

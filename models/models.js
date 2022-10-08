@@ -1,6 +1,6 @@
 
-import { Sequelize, Model, DataTypes } from "sequelize";
-export const sequelize = new Sequelize("db", "", "", {
+const { Sequelize, Model, DataTypes } = require("sequelize");
+ const sequelize = new Sequelize("db", "", "", {
 dialect:"sqlite",
 storage: "dbfile",
 logging: false
@@ -89,40 +89,51 @@ User.init({
    },
    { sequelize, timestamps: true }
  );
-  class Stat extends Model {
-    //  declare id: number;
-  }
-  Stat.init(
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
-      amount: { type: DataTypes.DOUBLE, allowNull: false },
-      trust: { type: DataTypes.DOUBLE, allowNull: false },
-    },
-    { sequelize, timestamps: true }
-  );
 
-  Stat.belongsTo(Coldkey);
+ class Stat extends Model {
+  //  declare id: number;
+  //  declare name: string;
+  //  declare model: string;
+  //  declare autocast: boolean;
+  //  declare port: string;
+  //  declare cudaDevice: number;
+  //  declare useCuda: boolean;
+  //  declare subtensorNetwork: string;
+  //  declare subtensorIp: string;
+  //  declare status: number;
+  //  declare Hotkeys: Hotkey[];
+ }
+ Stat.init(
+   {
+     id: {
+       type: DataTypes.INTEGER,
+       autoIncrement: true,
+       primaryKey: true,
+     },
+     amount: { type: DataTypes.DOUBLE, allowNull: false },
+     trust: { type: DataTypes.DOUBLE, allowNull: false },
+   },
+   { sequelize, timestamps: true }
+ );
 
  Coldkey.hasMany(Hotkey)
  Hotkey.belongsTo(Coldkey)
+ Stat.belongsTo(Coldkey);
  Miner.hasMany(Hotkey);
 
 
 
     User.sync()
-    Stat.sync()
 Coldkey.sync()
 Hotkey.sync()
 Miner.sync()
+Stat.sync()
 
-export {
-    User,
-Coldkey,
-Hotkey,
-Miner,
-Stat
-}
+module.exports = {
+  sequelize,
+  User,
+  Coldkey,
+  Hotkey,
+  Miner,
+  Stat
+};

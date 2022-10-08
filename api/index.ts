@@ -232,4 +232,14 @@ export const Api = (onLoggedOut: ()=>void) =>{
         });
       },
     },
+    Stat: {
+      
+      getMultiple: () => {
+        return fetchFromApi({
+          path: "dashboard/stat",
+          method: "POST",
+          body: {},
+        });
+      },
+    },
   };};

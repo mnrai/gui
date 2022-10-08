@@ -8,8 +8,8 @@ RUN npm i -g yarn
 WORKDIR /workspace
 COPY . .
 EXPOSE 3000
-RUN rm -rf node_modules yarn.lock package.lock
-RUN npm i --force
+# RUN rm -rf node_modules yarn.lock package.lock
+# RUN npm i
 RUN chmod 700 /workspace/start.sh
 CMD ["/bin/bash", "/workspace/start.sh"]
 
