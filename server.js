@@ -9,26 +9,22 @@ const fs = require( "node:fs/promises");
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
-const { Coldkey,Hotkey,  Stat } = require("./models/models");
+const { Coldkey,Hotkey, init, Stat } = require("./models/models");
 const { parse:parseCsv } = require("csv-parse/sync");
 
 var cron = require("node-cron");
 
-Coldkey.findAll({include: Hotkey}).then(async coldkeys=>{
+init.then(() => {
+  Coldkey.findAll({ include: Hotkey }).then(async (coldkeys) => {
+    let coldwalletsFoundOnFileSystem = [];
 
-
-
-    let coldwalletsFoundOnFileSystem = []
-    
-    try{
-      coldwalletsFoundOnFileSystem = await fs.readdir("/root/.bittensor/wallets");
-
-
-    }catch(e){
-  console.log({ e });
-      
+    try {
+      coldwalletsFoundOnFileSystem = await fs.readdir(
+        "/root/.bittensor/wallets"
+      );
+    } catch (e) {
+      console.log({ e });
     }
-
 
     const coldwalletsFoundOnFileSystemObject = await Promise.all(
       coldwalletsFoundOnFileSystem.map(async (c) => {
@@ -38,7 +34,6 @@ Coldkey.findAll({include: Hotkey}).then(async coldkeys=>{
           hotwalletsFoundOnFileSystem = await fs.readdir(
             `/root/.bittensor/wallets/${c}/hotkeys`
           );
-
         } catch (e) {
           console.log({ e });
         }
@@ -49,138 +44,132 @@ Coldkey.findAll({include: Hotkey}).then(async coldkeys=>{
         };
       })
     );
-    Promise.all(coldwalletsFoundOnFileSystemObject.map(async c=>{
-      let dbcoldkeyobject = coldkeys?.find(ck=>ck.name === c.name);
-      if (!dbcoldkeyobject) {
-        dbcoldkeyobject = await Coldkey.create({
-          name: c.name
-        });
-      }
-
-      if(c.hotkeys.length > dbcoldkeyobject.Hotkeys.length) {
-        const hotkeysToCreate = c.hotkeys.filter(
-          (hk) => !dbcoldkeyobject.Hotkeys?.find(htk=>htk.name === hk)
-        );
-
-
-        await Promise.all(hotkeysToCreate.map(async hkname=> {
-          const newlyCreatedHotkey = await Hotkey.create({
-            name: hkname,
-            coldkeyId: dbcoldkeyobject.id,
-            coldkey: dbcoldkeyobject,
-            registered: false,
+    Promise.all(
+      coldwalletsFoundOnFileSystemObject.map(async (c) => {
+        let dbcoldkeyobject = coldkeys?.find((ck) => ck.name === c.name);
+        if (!dbcoldkeyobject) {
+          dbcoldkeyobject = await Coldkey.create({
+            name: c.name,
           });
+        }
 
-          newlyCreatedHotkey.setColdkey(dbcoldkeyobject);
+        if (c.hotkeys.length > dbcoldkeyobject.Hotkeys.length) {
+          const hotkeysToCreate = c.hotkeys.filter(
+            (hk) => !dbcoldkeyobject.Hotkeys?.find((htk) => htk.name === hk)
+          );
+
+          await Promise.all(
+            hotkeysToCreate.map(async (hkname) => {
+              const newlyCreatedHotkey = await Hotkey.create({
+                name: hkname,
+                coldkeyId: dbcoldkeyobject.id,
+                coldkey: dbcoldkeyobject,
+                registered: false,
+              });
+
+              newlyCreatedHotkey.setColdkey(dbcoldkeyobject);
+
+              return true;
+            })
+          );
+        }
+      })
+    );
+
+    cron.schedule("0,20,40 * * * *", async () => {
+      const coldkeys = await Coldkey.findAll();
+      const coldkeyNames = coldkeys.map((c) => c.name);
+
+      const res = await Promise.all(
+        coldkeyNames.map((name) => {
+          return new Promise((resolve, reject) => {
+            exec(
+              `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $2"|"$4"|"$10}'`,
+              (err, stout, stderr) => {
+                if (err) {
+                  reject(err);
+                }
+                resolve({ name, data: stout });
+              }
+            );
+          });
+        })
+      );
+
+      const res2 = await Promise.all(
+        res.map(async ({ name, data }) => {
+          try {
+            const records = parseCsv(data, { data: "|" });
+
+            const amount = parseFloat(
+              records
+                .filter((r) => r[0])
+                .map((r) =>
+                  !isNaN(parseFloat(r[0]))
+                    ? parseFloat(r[0]?.replace("…", ""))
+                    : 0
+                )
+                .reduce((total, r) => total + r, 0)
+            );
+            const trust = parseFloat(
+              records
+                .filter((r) => r[1])
+                .map((r) =>
+                  !isNaN(parseFloat(r[0]))
+                    ? parseFloat(r[0]?.replace("…", ""))
+                    : 0
+                )
+                .reduce((total, r) => total + r, 0)
+            );
+
+            const key = coldkeys.find((c) => c.name === name);
+
+            const stat = await Stat.create(
+              {
+                amount: amount,
+                coldkey: key,
+                trust: trust,
+                coldkeyId: key.id,
+              },
+              { include: [Coldkey] }
+            );
+            stat.setColdkey(key);
+          } catch (e) {
+            console.log("hhha", e);
+          }
 
           return true;
-        }))
-      }
-    }));
+        })
+      );
 
+      const stats = await Stat.findAll();
+    });
 
-       cron.schedule("0,20,40 * * * *", async () => {
-         const coldkeys = await Coldkey.findAll();
-         const coldkeyNames = coldkeys.map((c) => c.name);
+    app.prepare().then(() => {
+      createServer(async (req, res) => {
+        try {
+          // Be sure to pass `true` as the second argument to `url.parse`.
+          // This tells it to parse the query portion of the URL.
+          const parsedUrl = parse(req.url, true);
+          const { pathname, query } = parsedUrl;
 
-         const res = await Promise.all(
-           coldkeyNames.map((name) => {
-             return new Promise((resolve, reject) => {
-               exec(
-                 `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $2"|"$4"|"$10}'`,
-                 (err, stout, stderr) => {
-
-                   if (err) {
-                     reject(err);
-                   }
-                   resolve({ name, data: stout });
-                 }
-               );
-             });
-           })
-         );
-
-
-         const res2 = await Promise.all(
-           res.map(async ({ name, data }) => {
-
-             try {
-               const records = parseCsv(data, { data: "|" });
-
-
-               const amount = parseFloat(
-                 records
-                   .filter((r) => r[0])
-                   .map((r) =>
-                     !isNaN(parseFloat(r[0]))
-                       ? parseFloat(r[0]?.replace("…", ""))
-                       : 0
-                   )
-                   .reduce((total, r) => total + r, 0)
-               );
-               const trust = parseFloat(
-                 records
-                   .filter((r) => r[1])
-                   .map((r) =>
-                     !isNaN(parseFloat(r[0]))
-                       ? parseFloat(r[0]?.replace("…", ""))
-                       : 0
-                   )
-                   .reduce((total, r) => total + r, 0)
-               );
-
-               const key = coldkeys.find((c) => c.name === name);
-
-               const stat = await Stat.create(
-                 {
-                   amount: amount,
-                   coldkey: key,
-                   trust: trust,
-                   coldkeyId: key.id,
-                 },
-                 { include: [Coldkey] }
-               );
-               stat.setColdkey(key);
-             } catch (e) {
-               console.log("hhha", e);
-             }
-
-             return true;
-           })
-         );
-
-         const stats = await Stat.findAll();
-
-       });
-
-     app.prepare().then(() => {
-       createServer(async (req, res) => {
-         try {
-           // Be sure to pass `true` as the second argument to `url.parse`.
-           // This tells it to parse the query portion of the URL.
-           const parsedUrl = parse(req.url, true);
-           const { pathname, query } = parsedUrl;
-
-           //   if (pathname === "/a") {
-           //     await app.render(req, res, "/a", query);
-           //   } else if (pathname === "/b") {
-           //     await app.render(req, res, "/b", query);
-           //   } else {
-           await handle(req, res, parsedUrl);
-           //   }
-         } catch (err) {
-           console.error("Error occurred handling", req.url, err);
-           res.statusCode = 500;
-           res.end("internal server error");
-         }
-         // @ts-ignore;
-       }).listen(port, (err) => {
-         if (err) throw err;
-         console.log(`> Ready on http://${hostname}:${port}`);
-       });
-     });
-
-
-
+          //   if (pathname === "/a") {
+          //     await app.render(req, res, "/a", query);
+          //   } else if (pathname === "/b") {
+          //     await app.render(req, res, "/b", query);
+          //   } else {
+          await handle(req, res, parsedUrl);
+          //   }
+        } catch (err) {
+          console.error("Error occurred handling", req.url, err);
+          res.statusCode = 500;
+          res.end("internal server error");
+        }
+        // @ts-ignore;
+      }).listen(port, (err) => {
+        if (err) throw err;
+        console.log(`> Ready on http://${hostname}:${port}`);
+      });
+    });
+  });
 });
-

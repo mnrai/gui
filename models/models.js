@@ -12,31 +12,13 @@ logging: false
   // declare password :string;
 }
 
-User.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  username: { type: DataTypes.STRING, allowNull: false },
-  password: { type: DataTypes.STRING, allowNull: false },
-}, {sequelize, timestamps:true});
+
 
  class Coldkey extends Model {
   //  declare id: number;
   //  declare name: string;
  }
- Coldkey.init(
-   {
-     id: {
-       type: DataTypes.INTEGER,
-       autoIncrement: true,
-       primaryKey: true,
-     },
-     name: { type: DataTypes.STRING, allowNull: false, unique: true },
-   },
-   { sequelize, timestamps: true }
- );
+
 
  class Hotkey extends Model {
   //  declare id: number;
@@ -45,18 +27,7 @@ User.init({
   //  declare Coldkey: Coldkey;
   //  declare ColdkeyId: number;
  }
- Hotkey.init(
-   {
-     id: {
-       type: DataTypes.INTEGER,
-       autoIncrement: true,
-       primaryKey: true,
-     },
-     name: { type: DataTypes.STRING, allowNull: false, unique: true },
-     registered: { type: DataTypes.BOOLEAN, allowNull: false },
-   },
-   { sequelize, timestamps: true }
- );
+
  class Miner extends Model {
   //  declare id: number;
   //  declare name: string;
@@ -70,7 +41,64 @@ User.init({
   //  declare status: number;
   //  declare Hotkeys: Hotkey[];
  }
- Miner.init(
+
+
+ class Stat extends Model {
+  //  declare id: number;
+  //  declare name: string;
+  //  declare model: string;
+  //  declare autocast: boolean;
+  //  declare port: string;
+  //  declare cudaDevice: number;
+  //  declare useCuda: boolean;
+  //  declare subtensorNetwork: string;
+  //  declare subtensorIp: string;
+  //  declare status: number;
+  //  declare Hotkeys: Hotkey[];
+ }
+  Coldkey.hasMany(Hotkey);
+  Hotkey.belongsTo(Coldkey);
+  Stat.belongsTo(Coldkey);
+  Miner.hasMany(Hotkey);
+
+
+const init = async () => {
+
+ 
+
+await User.init({
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  username: { type: DataTypes.STRING, allowNull: false },
+  password: { type: DataTypes.STRING, allowNull: false },
+}, {sequelize, timestamps:true});
+ await Coldkey.init(
+   {
+     id: {
+       type: DataTypes.INTEGER,
+       autoIncrement: true,
+       primaryKey: true,
+     },
+     name: { type: DataTypes.STRING, allowNull: false, unique: true },
+   },
+   { sequelize, timestamps: true }
+ );
+ await Hotkey.init(
+   {
+     id: {
+       type: DataTypes.INTEGER,
+       autoIncrement: true,
+       primaryKey: true,
+     },
+     name: { type: DataTypes.STRING, allowNull: false, unique: true },
+     registered: { type: DataTypes.BOOLEAN, allowNull: false },
+   },
+   { sequelize, timestamps: true }
+ );
+ await Miner.init(
    {
      id: {
        type: DataTypes.INTEGER,
@@ -89,21 +117,7 @@ User.init({
    },
    { sequelize, timestamps: true }
  );
-
- class Stat extends Model {
-  //  declare id: number;
-  //  declare name: string;
-  //  declare model: string;
-  //  declare autocast: boolean;
-  //  declare port: string;
-  //  declare cudaDevice: number;
-  //  declare useCuda: boolean;
-  //  declare subtensorNetwork: string;
-  //  declare subtensorIp: string;
-  //  declare status: number;
-  //  declare Hotkeys: Hotkey[];
- }
- Stat.init(
+ await Stat.init(
    {
      id: {
        type: DataTypes.INTEGER,
@@ -116,20 +130,18 @@ User.init({
    { sequelize, timestamps: true }
  );
 
- Coldkey.hasMany(Hotkey)
- Hotkey.belongsTo(Coldkey)
- Stat.belongsTo(Coldkey);
- Miner.hasMany(Hotkey);
 
+    await User.sync()
+    await Coldkey.sync()
+    await Hotkey.sync()
+    await Miner.sync()
+    await Stat.sync()
 
-
-    User.sync()
-Coldkey.sync()
-Hotkey.sync()
-Miner.sync()
-Stat.sync()
+    return true
+}
 
 module.exports = {
+  init,
   sequelize,
   User,
   Coldkey,
