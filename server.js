@@ -14,7 +14,7 @@ const { parse:parseCsv } = require("csv-parse/sync");
 
 var cron = require("node-cron");
 
-init.then(() => {
+init().then(() => {
   Coldkey.findAll({ include: Hotkey }).then(async (coldkeys) => {
     let coldwalletsFoundOnFileSystem = [];
 
