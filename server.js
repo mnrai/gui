@@ -26,7 +26,7 @@ init().then(() => {
 
     try {
       coldwalletsFoundOnFileSystem = await fs.readdir(
-        "/root/.bittensor/wallets"
+        "~/.bittensor/wallets"
       );
     } catch (e) {
       console.log({ e });
@@ -38,7 +38,7 @@ init().then(() => {
 
         try {
           hotwalletsFoundOnFileSystem = await fs.readdir(
-            `/root/.bittensor/wallets/${c}/hotkeys`
+            `~/.bittensor/wallets/${c}/hotkeys`
           );
         } catch (e) {
           console.log({ e });
