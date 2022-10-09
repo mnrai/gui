@@ -136,8 +136,8 @@ init().then(() => {
                 records
                   .filter((r) => r[1])
                   .map((r) =>
-                    !isNaN(parseFloat(r[0]))
-                      ? parseFloat(r[0]?.replace("…", ""))
+                    !isNaN(parseFloat(r[1]))
+                      ? parseFloat(r[1]?.replace("…", ""))
                       : 0
                   )
                   .reduce((total, r) => total + r, 0)
