@@ -26,10 +26,10 @@ init().then(() => {
 
     try {
       coldwalletsFoundOnFileSystem = await fs.readdir(
-        "~/.bittensor/wallets"
+        "/root/.bittensor/wallets"
       );
     } catch (e) {
-
+      console.log({ e });
     }
 
     const coldwalletsFoundOnFileSystemObject = await Promise.all(
@@ -38,10 +38,10 @@ init().then(() => {
 
         try {
           hotwalletsFoundOnFileSystem = await fs.readdir(
-            `~/.bittensor/wallets/${c}/hotkeys`
+            `/root/.bittensor/wallets/${c}/hotkeys`
           );
         } catch (e) {
-
+          console.log({ e });
         }
 
         return {
