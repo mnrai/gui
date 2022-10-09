@@ -13,6 +13,7 @@
     "@rehooks/local-storage": "^2.4.4",
     "bcrypt": "^5.0.1",
     "chart.js": "^3.9.1",
+    "command-line-args": "^5.2.1",
     "csv": "^6.2.0",
     "csv-parse": "^5.3.0",
     "evergreen-ui": "^6.10.3",

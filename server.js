@@ -11,6 +11,11 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 const { Coldkey,Hotkey, init, Stat } = require("./models/models");
 const { parse:parseCsv } = require("csv-parse/sync");
+const commandLineArgs = require("command-line-args");
+const optionDefinitions = [
+  { name: "port", alias: "p", type: Number },
+];
+const options = commandLineArgs(optionDefinitions);
 
 var cron = require("node-cron");
 
@@ -166,9 +171,9 @@ init().then(() => {
           res.end("internal server error");
         }
         // @ts-ignore;
-      }).listen(port, (err) => {
+      }).listen(options.port || port, (err) => {
         if (err) throw err;
-        console.log(`> Ready on http://${hostname}:${port}`);
+        console.log(`> Ready on http://${hostname}:${options.port || port}`);
       });
     });
   });
