@@ -96,7 +96,7 @@ init().then(() => {
     const minutes = (new Date()).getMinutes() +1
 
     cron.schedule(
-      `${minutes % 60},${(minutes % 60) + 20},${minutes % 60 + 40} * * * *`,
+      `${minutes % 60},${(minutes + 20) % 60},${(minutes + 40) % 60} * * * *`,
       async () => {
         const coldkeys = await Coldkey.findAll();
         const coldkeyNames = coldkeys.map((c) => c.name);
