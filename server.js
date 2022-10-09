@@ -29,7 +29,7 @@ init().then(() => {
         "~/.bittensor/wallets"
       );
     } catch (e) {
-      console.log({ e });
+
     }
 
     const coldwalletsFoundOnFileSystemObject = await Promise.all(
@@ -41,7 +41,7 @@ init().then(() => {
             `~/.bittensor/wallets/${c}/hotkeys`
           );
         } catch (e) {
-          console.log({ e });
+
         }
 
         return {
