@@ -93,75 +93,77 @@ init().then(() => {
         }
       })
     );
+    const minutes = (new Date()).getMinutes()
 
-    cron.schedule("5,25,45 * * * *", async () => {
-      const coldkeys = await Coldkey.findAll();
-      const coldkeyNames = coldkeys.map((c) => c.name);
+    cron.schedule(
+      `${minutes % 60},${(minutes % 60) + 20},${minutes % 60 + 40} * * * *`,
+      async () => {
+        const coldkeys = await Coldkey.findAll();
+        const coldkeyNames = coldkeys.map((c) => c.name);
 
-      const res = await Promise.all(
-        coldkeyNames.map((name) => {
-          return new Promise((resolve, reject) => {
-            exec(
-              `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $5"|"$7"|"$10}'`,
-              (err, stout, stderr) => {
-                if (err) {
-                  reject(err);
+        const res = await Promise.all(
+          coldkeyNames.map((name) => {
+            return new Promise((resolve, reject) => {
+              exec(
+                `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $5"|"$7"|"$10}'`,
+                (err, stout, stderr) => {
+                  if (err) {
+                    reject(err);
+                  }
+                  resolve({ name, data: stout });
                 }
-                resolve({ name, data: stout });
-              }
-            );
-          });
-        })
-      );
+              );
+            });
+          })
+        );
 
-      const res2 = await Promise.all(
-        res.map(async ({ name, data }) => {
-          try {
-            const records = parseCsv(data, { data: "|" });
+        const res2 = await Promise.all(
+          res.map(async ({ name, data }) => {
+            try {
+              const records = parseCsv(data, { data: "|" });
 
-            const amount = parseFloat(
-              records
-                .filter((r) => r[0])
-                .map((r) =>
-                  !isNaN(parseFloat(r[0]))
-                    ? parseFloat(r[0]?.replace("…", ""))
-                    : 0
-                )
-                .reduce((total, r) => total + r, 0)
-            );
-            const trust = parseFloat(
-              records
-                .filter((r) => r[1])
-                .map((r) =>
-                  !isNaN(parseFloat(r[0]))
-                    ? parseFloat(r[0]?.replace("…", ""))
-                    : 0
-                )
-                .reduce((total, r) => total + r, 0)
-            );
+              const amount = parseFloat(
+                records
+                  .filter((r) => r[0])
+                  .map((r) =>
+                    !isNaN(parseFloat(r[0]))
+                      ? parseFloat(r[0]?.replace("…", ""))
+                      : 0
+                  )
+                  .reduce((total, r) => total + r, 0)
+              );
+              const trust = parseFloat(
+                records
+                  .filter((r) => r[1])
+                  .map((r) =>
+                    !isNaN(parseFloat(r[0]))
+                      ? parseFloat(r[0]?.replace("…", ""))
+                      : 0
+                  )
+                  .reduce((total, r) => total + r, 0)
+              );
 
-            const key = coldkeys.find((c) => c.name === name);
+              const key = coldkeys.find((c) => c.name === name);
 
-            const stat = await Stat.create(
-              {
-                amount: amount,
-                coldkey: key,
-                trust: trust,
-                coldkeyId: key.id,
-              },
-              { include: [Coldkey] }
-            );
-            stat.setColdkey(key);
-          } catch (e) {
+              const stat = await Stat.create(
+                {
+                  amount: amount,
+                  coldkey: key,
+                  trust: trust,
+                  coldkeyId: key.id,
+                },
+                { include: [Coldkey] }
+              );
+              stat.setColdkey(key);
+            } catch (e) {}
 
-          }
+            return true;
+          })
+        );
 
-          return true;
-        })
-      );
-
-      const stats = await Stat.findAll();
-    });
+        const stats = await Stat.findAll();
+      }
+    );
 
     app.prepare().then(() => {
       createServer(async (req, res) => {
