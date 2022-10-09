@@ -29,7 +29,7 @@ init().then(() => {
         "/root/.bittensor/wallets"
       );
     } catch (e) {
-      console.log({ e });
+
     }
 
     const coldwalletsFoundOnFileSystemObject = await Promise.all(
@@ -41,9 +41,9 @@ init().then(() => {
             `/root/.bittensor/wallets/${c}/hotkeys`
           );
         } catch (e) {
-          console.log({ e });
+
         }
-        console.log({ hotwalletsFoundOnFileSystem });
+
         return {
           name: c,
           hotkeys: hotwalletsFoundOnFileSystem,
@@ -58,19 +58,19 @@ init().then(() => {
             name: c.name,
           });
         }
-        console.log({ dbcoldkeyobject, h: dbcoldkeyobject.Hotkeys, c });
+
 
         if (
           !dbcoldkeyobject.Hotkeys || c.hotkeys.length >
           dbcoldkeyobject.Hotkeys.length
         ) {
-          console.log({ dbcoldkeyobject, c });
+
 
           const hotkeysToCreate = c.hotkeys.filter(
             (hk) => !dbcoldkeyobject.Hotkeys?.find((htk) => htk.name === hk)
           );
 
-          console.log({ hotkeysToCreate });
+
 
           await Promise.all(
             hotkeysToCreate.map(async (hkname) => {
@@ -86,7 +86,7 @@ init().then(() => {
 
                 return true;
               } catch (e) {
-                console.log(e);
+
               }
             })
           );
@@ -153,7 +153,7 @@ init().then(() => {
             );
             stat.setColdkey(key);
           } catch (e) {
-            console.log("hhha", e);
+
           }
 
           return true;
