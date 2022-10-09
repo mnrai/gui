@@ -58,6 +58,8 @@ init().then(() => {
             name: c.name,
           });
         }
+        console.log({ dbcoldkeyobject, c });
+
         if (c.hotkeys.length > dbcoldkeyobject.Hotkeys.length) {
         console.log({ dbcoldkeyobject , c});
 
