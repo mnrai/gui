@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sequelize, User } from "../../../models";
 import fs from "node:fs/promises";
+import { cmdOptions } from "helpers/cmdOptions";
 const bcrypt = require("bcrypt");
 const randomstring = require("randomstring");
 const jsonwebtoken = require("jsonwebtoken");
@@ -63,7 +64,7 @@ export default async function handler(
           expiresIn: 60*60,
         }
       );
-      res.setHeader("Set-Cookie", `Authorization=${token};HttpOnly;Secure;Path=/;Expires=${60*60}`);
+      res.setHeader("Set-Cookie", `Authorization=${token};HttpOnly;${cmdOptions.use_http? "":"Secure;"}Path=/;Expires=${60*60*24}`);
       res.status(200).json({ user, comparePW, randomStringHash, token });
     } catch(e) {
           return res.status(401).json({ error: "not authorised" });

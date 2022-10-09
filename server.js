@@ -14,6 +14,7 @@ const { parse:parseCsv } = require("csv-parse/sync");
 const commandLineArgs = require("command-line-args");
 const optionDefinitions = [
   { name: "port", alias: "p", type: Number },
+  { name: "use_http", type: Boolean },
 ];
 const options = commandLineArgs(optionDefinitions);
 
