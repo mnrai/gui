@@ -128,6 +128,7 @@ const formatDate = (date:Date) => {
       </div>
       {selectedColdkey ? (
         <>
+       {statData?.filter((s) => s.ColdkeyId === parseInt(selectedColdkey + ""))?.length? <>
           <Line
             data={{
               labels: statData
@@ -172,6 +173,7 @@ const formatDate = (date:Date) => {
           />
           <br />
           <br />
+        </>:null}
           <Table>
             <Table.Head>
               <Table.TextHeaderCell>DATE</Table.TextHeaderCell>
@@ -182,7 +184,7 @@ const formatDate = (date:Date) => {
               {statData.length ? (
                 [...statData]
                   .reverse()
-                  .filter(s=>s.ColdkeyId === parseInt(selectedColdkey + ""))
+                  .filter((s) => s.ColdkeyId === parseInt(selectedColdkey + ""))
                   .map((h) => (
                     // @ts-ignore
                     <Table.Row key={h?.id}>
