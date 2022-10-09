@@ -56,10 +56,7 @@ logging: false
   //  declare status: number;
   //  declare Hotkeys: Hotkey[];
  }
-  Coldkey.hasMany(Hotkey);
-  Hotkey.belongsTo(Coldkey);
-  Stat.belongsTo(Coldkey);
-  Miner.hasMany(Hotkey);
+
 
 
 const init = async () => {
@@ -129,6 +126,10 @@ await User.init({
    },
    { sequelize, timestamps: true }
  );
+   Coldkey.hasMany(Hotkey);
+   Hotkey.belongsTo(Coldkey);
+   Stat.belongsTo(Coldkey);
+   Miner.hasMany(Hotkey);
 
 
     await User.sync()
