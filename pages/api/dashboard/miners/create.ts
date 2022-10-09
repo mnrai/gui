@@ -3,6 +3,7 @@ import { exec } from "child_process";
 import { Coldkey, Hotkey, Miner } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { authHandler, startMiner } from "helpers";
+import { cmdOptions } from "helpers/cmdOptions";
 
 type Data = any
 
@@ -13,6 +14,9 @@ export default authHandler(async function handler(
 ) {
 
    try {
+       if (cmdOptions.use_http) {
+         throw new Error("cannot be used with http");
+       }
      const {
        name,
        hotkeyIds,

@@ -4,6 +4,7 @@ import { Coldkey, Hotkey } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { authHandler } from "helpers";
 import path from "path";
+import { cmdOptions } from "helpers/cmdOptions";
 
 type Data = any
 
@@ -28,28 +29,30 @@ return new Promise((resolve, reject)=> {
 })
 
 }
-
-export default authHandler(async function handler(
+const routeHandler = async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  try {
+    if(cmdOptions.use_http) {
+      throw new Error("cannot be used with http")
+    }
+    const { name, password } = JSON.parse(req.body);
+    if (!name || !password) {
+      return res.status(401).json({ error: "oops, there was a problem" });
+    }
 
-   try {
-     const { name, password } = JSON.parse(req.body);
-     if (!name || !password) {
-       return res.status(401).json({ error: "oops, there was a problem" });
-     }
-
-     const mnemonic = await newColdkey({name, password})
-     const coldkey = await Coldkey.create({
+    const mnemonic = await newColdkey({ name, password });
+    const coldkey = await Coldkey.create({
       name,
-     })
- 
-     res.status(200).json({
+    });
+
+    res.status(200).json({
       coldkey,
-       mnemonic,
-     });
-   } catch (e) {
-     return res.status(401).json({ error: "oops, there was a problem" });
-   }
-})
+      mnemonic,
+    });
+  } catch (e) {
+    return res.status(401).json({ error: "oops, there was a problem" });
+  }
+};
+export default authHandler(routeHandler);

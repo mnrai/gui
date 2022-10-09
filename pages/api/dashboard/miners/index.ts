@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { exec } from "child_process";
 import { authHandler } from "helpers";
+import { cmdOptions } from "helpers/cmdOptions";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Coldkey, Hotkey, Miner } from "../../../../models";
@@ -13,6 +14,7 @@ export default authHandler(async function handler(
 ) {
 
    try {
+
   
      const miners = await Miner.findAll({include: Hotkey})
 

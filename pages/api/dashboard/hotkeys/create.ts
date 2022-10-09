@@ -2,6 +2,7 @@
 import { exec } from "child_process";
 import { Coldkey, Stat,Hotkey } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { cmdOptions } from "helpers/cmdOptions";
 
 type Data = any
 
@@ -36,6 +37,9 @@ export default async function handler(
 ) {
 
    try {
+       if (cmdOptions.use_http) {
+         throw new Error("cannot be used with http");
+       }
      const { name,coldkeyId } = JSON.parse(req.body);
      if (!name || !coldkeyId) {
      return res.status(401).json({ error: "oops, there was a problem" });

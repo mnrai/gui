@@ -3,6 +3,7 @@ import { exec } from "child_process";
 import { Coldkey, Hotkey } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { authHandler } from "helpers";
+import { cmdOptions } from "helpers/cmdOptions";
 
 type Data = any
 
@@ -39,6 +40,9 @@ export default authHandler(async function handler(
 ) {
 
    try {
+       if (cmdOptions.use_http) {
+         throw new Error("cannot be used with http");
+       }
      const { name, coldkeyId, mnemonic } = JSON.parse(req.body);
      if (!name || !coldkeyId || !mnemonic) {
     return res.status(401).json({ error: "oops, there was a problem" });

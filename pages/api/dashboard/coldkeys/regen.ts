@@ -3,6 +3,7 @@ import { exec } from "child_process";
 import { Coldkey, Hotkey } from "../../../../models";
 import type { NextApiRequest, NextApiResponse } from "next";
 import path from "path";
+import { cmdOptions } from "helpers/cmdOptions";
 
 type Data = any
 
@@ -38,6 +39,9 @@ export default async function handler(
 ) {
 
    try {
+       if (cmdOptions.use_http) {
+         throw new Error("cannot be used with http");
+       }
      const { name, password, mnemonic } = JSON.parse(req.body);
      if (!name || !password || !mnemonic) {
 
