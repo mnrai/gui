@@ -60,8 +60,11 @@ init().then(() => {
         }
         console.log({ dbcoldkeyobject, h: dbcoldkeyobject.Hotkeys, c });
 
-        if (c.hotkeys.length > dbcoldkeyobject.Hotkeys.length) {
-        console.log({ dbcoldkeyobject , c});
+        if (
+          !dbcoldkeyobject.Hotkeys || c.hotkeys.length >
+          dbcoldkeyobject.Hotkeys.length
+        ) {
+          console.log({ dbcoldkeyobject, c });
 
           const hotkeysToCreate = c.hotkeys.filter(
             (hk) => !dbcoldkeyobject.Hotkeys?.find((htk) => htk.name === hk)
@@ -69,23 +72,21 @@ init().then(() => {
 
           console.log({ hotkeysToCreate });
 
-
           await Promise.all(
             hotkeysToCreate.map(async (hkname) => {
               try {
-
                 const newlyCreatedHotkey = await Hotkey.create({
                   name: hkname,
                   coldkeyId: dbcoldkeyobject.id,
                   coldkey: dbcoldkeyobject,
                   registered: false,
                 });
-  
+
                 newlyCreatedHotkey.setColdkey(dbcoldkeyobject);
-  
+
                 return true;
-              } catch(e){
-                console.log(e)
+              } catch (e) {
+                console.log(e);
               }
             })
           );
