@@ -94,7 +94,7 @@ init().then(() => {
       })
     );
 
-    cron.schedule("0,20,40 * * * *", async () => {
+    cron.schedule("5,25,45 * * * *", async () => {
       const coldkeys = await Coldkey.findAll();
       const coldkeyNames = coldkeys.map((c) => c.name);
 
