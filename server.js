@@ -93,7 +93,7 @@ init().then(() => {
         }
       })
     );
-    const minutes = (new Date()).getMinutes()
+    const minutes = (new Date()).getMinutes() +1
 
     cron.schedule(
       `${minutes % 60},${(minutes % 60) + 20},${minutes % 60 + 40} * * * *`,
