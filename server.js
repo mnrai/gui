@@ -102,7 +102,7 @@ init().then(() => {
         coldkeyNames.map((name) => {
           return new Promise((resolve, reject) => {
             exec(
-              `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $2"|"$4"|"$10}'`,
+              `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $5"|"$6"|"$10}'`,
               (err, stout, stderr) => {
                 if (err) {
                   reject(err);
