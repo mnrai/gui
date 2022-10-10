@@ -120,7 +120,7 @@ init().then(() => {
         const res2 = await Promise.all(
           res.map(async ({ name, data }) => {
             try {
-              const records = parseCsv(data, { data: "|" });
+              const records = parseCsv(data, { delimiter: "|" });
 
               const amount = parseFloat(
                 records
