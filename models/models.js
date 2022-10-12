@@ -63,15 +63,20 @@ const init = async () => {
 
  
 
-await User.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+await User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    telegramGroupChatId: { type: DataTypes.STRING },
+    telegramBotToken: { type: DataTypes.STRING },
+    username: { type: DataTypes.STRING, allowNull: false },
+    password: { type: DataTypes.STRING, allowNull: false },
   },
-  username: { type: DataTypes.STRING, allowNull: false },
-  password: { type: DataTypes.STRING, allowNull: false },
-}, {sequelize, timestamps:true});
+  { sequelize, timestamps: true }
+);
  await Coldkey.init(
    {
      id: {

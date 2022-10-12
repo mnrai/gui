@@ -1,6 +1,6 @@
 import * as React from "react";
 // import { graphql, HeadFC, Link, useStaticQuery } from "gatsby";
-import { Select } from "evergreen-ui";
+import { CogIcon, Icon, Select } from "evergreen-ui";
 import Link from "next/link";
 import { useColdkeys,useApi, useHotkeys } from "hooks";
 import { useRouter } from "next/router";
@@ -45,7 +45,7 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
             flexDirection: "row",
             display: "flex",
             alignItems: "center",
-            justifyContent:"space-between",
+            justifyContent: "space-between",
             position: "relative",
           }}
         >
@@ -57,6 +57,24 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
               // paddingLeft: 20,
             }}
           >
+            <Link href="/dashboard/alerts">
+              <p
+                style={{
+                  fontWeight: "400",
+                  letterSpacing: "2px",
+                  color: "#393939",
+                  marginTop: 0,
+                  marginBottom: 0,
+                  marginBlockEnd: 0,
+                  marginBlockStart: 0,
+                  padding: 0,
+                  paddingRight: 20,
+                  cursor: "pointer",
+                }}
+              >
+                <Icon icon={CogIcon}></Icon>
+              </p>
+            </Link>
             <Link href="/dashboard/coldkeys">
               <p
                 style={{
@@ -136,6 +154,7 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
               </Link>
             ) : null}
           </div>
+
           <p
             style={{
               fontWeight: "400",

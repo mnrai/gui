@@ -9,7 +9,7 @@ const fs = require( "node:fs/promises");
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
-const { Coldkey,Hotkey, init, Stat } = require("./models/models");
+const { Coldkey,Hotkey, init, Stat, User } = require("./models/models");
 const { parse:parseCsv } = require("csv-parse/sync");
 const commandLineArgs = require("command-line-args");
 const optionDefinitions = [
@@ -105,7 +105,7 @@ init().then(() => {
           coldkeyNames.map((name) => {
             return new Promise((resolve, reject) => {
               exec(
-                `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $5"|"$7"|"$10}'`,
+                `btcli overview --wallet.name ${name} --no_prompt --width 200 | sed -e '/Wallet -/d' -e '/AC../d' -e '/τ/d' | awk  '{print $1|$2|$5"|"$7"|"$10"|"$12}'`,
                 (err, stout, stderr) => {
                   if (err) {
                     reject(err);
@@ -122,11 +122,47 @@ init().then(() => {
             try {
               const records = parseCsv(data, { delimiter: "|" });
 
+              const updatedValueHigh = records.filter(r=>parseInt(r[5] )> 300);
+              const trustLow = records.filter(r=>parseFloat(r[3] ) < 0.5);
+              if (updatedValueHigh.length || trustLow.length) {
+                try {
+
+                  const users = await User.findAll()
+                  const user = users[0];
+                  const {telegramGroupChatId, telegramBotToken} = user;
+
+                  if( telegramGroupChatId && telegramBotToken) {
+                    const updatedMessage = updatedValueHigh.length ? updatedValueHigh.map(
+                      (r) => `(Coldkey name: "${r[0]}"- Hotkey name: ${r[1]}) High updated value alert (${r[5]}). `
+                    ): "";
+                    const lowTrustMessage = updatedValueHigh.length
+                      ? updatedValueHigh.map(
+                          (r) =>
+                            `(Coldkey name: "${r[0]}"- Hotkey name: ${r[1]}) Low trust alert (${r[3]}). `
+                        )
+                      : "";
+
+                    exec(
+                      `curl --data chat_id="${telegramGroupChatId}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
+                      (err, stout, stderr) => {
+                        if (err) {
+                          console.log(err);
+                        }
+                        // console.log({stout})
+                      }
+                    );
+                  }
+                } catch(e) {
+                  console.log(e)
+                }
+              }
+
+
               const amount = parseFloat(
                 records
-                  .filter((r) => r[0])
+                  .filter((r) => r[2])
                   .map((r) =>
-                    !isNaN(parseFloat(r[0]))
+                    !isNaN(parseFloat(r[2]))
                       ? parseFloat(r[0]?.replace("…", ""))
                       : 0
                   )
@@ -134,10 +170,10 @@ init().then(() => {
               );
               const trust = parseFloat(
                 records
-                  .filter((r) => r[1])
+                  .filter((r) => r[3])
                   .map((r) =>
                     !isNaN(parseFloat(r[1]))
-                      ? parseFloat(r[1]?.replace("…", ""))
+                      ? parseFloat(r[3]?.replace("…", ""))
                       : 0
                   )
                   .reduce((total, r) => total + r, 0)

@@ -12,15 +12,20 @@ logging: false
   // declare password :string;
 }
 
-User.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    telegramGroupChatId: { type: DataTypes.STRING },
+    telegramBotToken: { type: DataTypes.STRING },
+    username: { type: DataTypes.STRING, allowNull: false },
+    password: { type: DataTypes.STRING, allowNull: false },
   },
-  username: { type: DataTypes.STRING, allowNull: false },
-  password: { type: DataTypes.STRING, allowNull: false },
-}, {sequelize, timestamps:true});
+  { sequelize, timestamps: true }
+);
 
  class Coldkey extends Model {
   //  declare id: number;
@@ -104,6 +109,9 @@ User.init({
     },
     { sequelize, timestamps: true }
   );
+    class Settings extends Model {
+      //  declare id: number;
+    }
 
   Stat.belongsTo(Coldkey);
 

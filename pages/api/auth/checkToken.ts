@@ -31,6 +31,9 @@ export default async function handler(
       }
       const response = jsonwebtoken.verify(token, randomStringHash);
       const isExpired = response.exp <( +new Date() / 1000);
+      const user = await User.findOne({
+        where: { username: response.user.username },
+      });
 
       if (!response || isExpired) {
         throw Error("invalid")
@@ -41,6 +44,7 @@ export default async function handler(
         response,
         dt: +new Date() / 1000,
         isExpired,
+        user
       });
       } catch(e) {
             return res.status(401).json({ error: "not authorised" });

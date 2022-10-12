@@ -46,6 +46,22 @@ export const Api = (onLoggedOut: ()=>void) =>{
           },
         });
       },
+      update: ({
+        telegramGroupChatId,
+        telegramBotToken,
+      }: {
+        telegramGroupChatId: string;
+        telegramBotToken: string;
+      }) => {
+        return fetchFromApi({
+          path: "dashboard/user/update",
+          method: "POST",
+          body: {
+            telegramGroupChatId,
+            telegramBotToken,
+          },
+        });
+      },
       logout: () => {
         return fetchFromApi({
           path: "auth/logout",

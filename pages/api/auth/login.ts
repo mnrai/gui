@@ -19,6 +19,8 @@ export default async function handler(
       }
 
       const users = await User.findAll();
+
+
       if (users.length === 0) {
         const saltRounds = 10;
 
@@ -34,6 +36,7 @@ export default async function handler(
       }
 
       const comparePW = await bcrypt.compare(password, user.password);
+
 
       if (!comparePW) {
         return res.status(401).json({ error: "not authorised" });
@@ -67,6 +70,8 @@ export default async function handler(
       res.setHeader("Set-Cookie", `Authorization=${token};HttpOnly;${cmdOptions.use_http? "":"Secure;"}Path=/;Expires=${60*60*24}`);
       res.status(200).json({ user, comparePW, randomStringHash, token });
     } catch(e) {
+
+
           return res.status(401).json({ error: "not authorised" });
 
     }
