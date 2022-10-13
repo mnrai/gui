@@ -15,6 +15,8 @@ const commandLineArgs = require("command-line-args");
 const optionDefinitions = [
   { name: "port", alias: "p", type: Number },
   { name: "use_http", type: Boolean },
+  { name: "telegram_group_id", type: String },
+  { name: "telegram_bot_token", type: String },
 ];
 const options = commandLineArgs(optionDefinitions);
 
@@ -127,11 +129,24 @@ init().then(() => {
               if (updatedValueHigh.length || trustLow.length) {
                 try {
 
-                  const users = await User.findAll()
-                  const user = users[0];
-                  const {telegramGroupChatId, telegramBotToken} = user;
+                  let telegram_group_id = options?.telegram_group_id;
+                  let telegram_bot_token = options?.telegram_bot_token;
+                  try {
 
-                  if( telegramGroupChatId && telegramBotToken) {
+                    const users = await User.findAll();
+                    const user = users[0];
+                    const { telegramGroupChatId, telegramBotToken } = user;
+                    if(telegramGroupChatId && telegramBotToken) {
+                      telegram_group_id =telegramGroupChatId;
+                      telegram_bot_token =telegramBotToken;
+                    }
+
+                  }catch(e){
+
+                  }
+                  
+
+                  if( telegram_group_id && telegram_bot_token) {
                     const updatedMessage = updatedValueHigh.length ? updatedValueHigh.map(
                       (r) => `(Coldkey name: "${r[0]}"- Hotkey name: ${r[1]}) High updated value alert (${r[5]}). `
                     ): "";
