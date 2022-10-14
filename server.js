@@ -161,7 +161,7 @@ init().then(() => {
                     const updatedMessage = updatedValueHigh.length ? updatedValueHigh.map(
                       (r) => `(Coldkey name: "${r[0]}"- Hotkey name: ${r[1]}) High updated value alert (${r[5]}). `
                     ): "";
-                    const lowTrustMessage = updatedValueHigh.length
+                    const lowTrustMessage = trustLow.length
                       ? trustLow.map(
                           (r) =>
                             `(Coldkey name: "${r[0]}"- Hotkey name: ${r[1]}) Low trust alert (${r[3]}). `
