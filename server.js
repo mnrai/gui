@@ -143,7 +143,9 @@ init().then(() => {
 
                     const users = await User.findAll();
                     const user = users[0];
-                    const { telegramGroupChatId, telegramBotToken } = user;
+                      telegramGroupChatId = user.telegramGroupChatId;
+                       telegramBotToken = user.telegramBotToken;
+
                     if(telegramGroupChatId && telegramBotToken) {
                       telegram_group_id =telegramGroupChatId;
                       telegram_bot_token =telegramBotToken;
@@ -166,10 +168,10 @@ init().then(() => {
                         )
                       : "";
               console.log("test4", { 1:updatedMessage,2: lowTrustMessage,  });
-              console.log("test5", { 1:`curl --data chat_id="${telegramGroupChatId}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`, });
+              console.log("test5", { 1:`curl --data chat_id="${telegram_group_id}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`, });
 
                     exec(
-                      `curl --data chat_id="${telegramGroupChatId}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
+                      `curl --data chat_id="${telegram_group_id}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegram_bot_token}/sendMessage`,
                       (err, stout, stderr) => {
                         if (err) {
                           console.log(err);
