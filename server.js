@@ -96,12 +96,14 @@ init().then(() => {
       })
     );
     const minutes = (new Date()).getMinutes() +1
+              console.log("test01", minutes % 60);
 
     cron.schedule(
       `${minutes % 60},${(minutes + 20) % 60},${(minutes + 40) % 60} * * * *`,
       async () => {
         const coldkeys = await Coldkey.findAll();
         const coldkeyNames = coldkeys.map((c) => c.name);
+              console.log("test02", { coldkeyNames });
 
         const res = await Promise.all(
           coldkeyNames.map((name) => {
@@ -118,6 +120,9 @@ init().then(() => {
             });
           })
         );
+
+              console.log("test03", { res });
+
 
         const res2 = await Promise.all(
           res.map(async ({ name, data }) => {
