@@ -168,7 +168,9 @@ init().then(() => {
                         )
                       : "";
               console.log("test4", { 1:updatedMessage,2: lowTrustMessage,  });
-              console.log("test5", { 1:`curl --data chat_id="${telegram_group_id}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`, });
+              console.log("test5", {
+                1: `curl --data chat_id="${telegram_group_id}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegram_bot_token}/sendMessage`,
+              });
 
                     exec(
                       `curl --data chat_id="${telegram_group_id}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegram_bot_token}/sendMessage`,
