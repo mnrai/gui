@@ -126,11 +126,14 @@ init().then(() => {
 
               const updatedValueHigh = records.filter(r=>parseInt(r[5] )> 300);
               const trustLow = records.filter(r=>parseFloat(r[3] ) < 0.5);
+              console.log("test1",{1:updatedValueHigh,2:trustLow})
               if (updatedValueHigh.length || trustLow.length) {
                 try {
 
                   let telegram_group_id = options?.telegram_group_id;
                   let telegram_bot_token = options?.telegram_bot_token;
+              console.log("test2", { telegram_group_id,telegram_bot_token });
+
                   try {
 
                     const users = await User.findAll();
@@ -144,6 +147,7 @@ init().then(() => {
                   }catch(e){
 
                   }
+              console.log("test3", { telegram_group_id, telegram_bot_token });
                   
 
                   if( telegram_group_id && telegram_bot_token) {
@@ -156,6 +160,8 @@ init().then(() => {
                             `(Coldkey name: "${r[0]}"- Hotkey name: ${r[1]}) Low trust alert (${r[3]}). `
                         )
                       : "";
+              console.log("test4", { 1:updatedMessage,2: lowTrustMessage,  });
+              console.log("test5", { 1:`curl --data chat_id="${telegramGroupChatId}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`, });
 
                     exec(
                       `curl --data chat_id="${telegramGroupChatId}" --data-urlencode "text=${updatedMessage}${lowTrustMessage}" https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
