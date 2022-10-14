@@ -1,6 +1,6 @@
 import * as React from "react";
 // import { graphql, HeadFC, Link, useStaticQuery } from "gatsby";
-import { CogIcon, Icon, Select } from "evergreen-ui";
+import {  Select } from "evergreen-ui";
 import Link from "next/link";
 import { useColdkeys,useApi, useHotkeys } from "hooks";
 import { useRouter } from "next/router";
@@ -72,7 +72,7 @@ const Header: React.FC<{ withNav:boolean}> = ({withNav }) => {
                   cursor: "pointer",
                 }}
               >
-                <Icon icon={CogIcon}></Icon>
+                SETTINGS
               </p>
             </Link>
             <Link href="/dashboard/coldkeys">
